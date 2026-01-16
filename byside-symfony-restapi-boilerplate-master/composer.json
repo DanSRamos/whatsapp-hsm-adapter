@@ -1,0 +1,101 @@
+{
+    "type": "project",
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "config": {
+        "bin-dir": "bin",
+        "secure-http": false,
+        "optimize-autoloader": true,
+        "sort-packages": true,
+        "process-timeout": 0,
+        "preferred-install": {
+            "*": "dist"
+        },
+        "platform": {
+          "php": "8.4"
+        },
+        "allow-plugins": {
+            "symfony/flex": true
+        }
+    },
+    "repositories": [
+        {
+            "name": "byside/monitor",
+            "url": "git@git.byside-nos.local:webcare/monitor.git",
+            "type": "vcs"
+        }
+    ],
+    "require": {
+        "php": "8.4",
+        "ext-ctype": "*",
+        "ext-iconv": "*",
+        "byside/monitor": "dev-feature/monitor-compatible-with-version-80",
+        "cocur/background-process": "^0.7.0",
+        "doctrine/dbal": "^4.2",
+        "doctrine/doctrine-bundle": "^2.13",
+        "doctrine/doctrine-migrations-bundle": "^3.4",
+        "doctrine/orm": "^3.3",
+        "guzzlehttp/guzzle": "^7.9",
+        "php-amqplib/rabbitmq-bundle": "^2.17",
+        "predis/predis": "^2.3",
+        "solarium/solarium": "^6.3",
+        "symfony/console": "^7.2",
+        "symfony/debug-bundle": "^7.2",
+        "symfony/dotenv": "^7.2",
+        "symfony/expression-language": "^7.2",
+        "symfony/flex": "^2.4",
+        "symfony/framework-bundle": "^7.2",
+        "symfony/http-client": "^7.2",
+        "symfony/monolog-bundle": "^3.10",
+        "symfony/property-access": "^7.2",
+        "symfony/property-info": "^7.2",
+        "symfony/serializer": "^7.2",
+        "symfony/validator": "^7.2",
+        "symfony/yaml": "^7.2"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.68",
+        "php-mock/php-mock": "^2.5",
+        "php-parallel-lint/php-parallel-lint": "^1.4",
+        "phpmd/phpmd": "^2.15",
+        "phpstan/phpstan": "^2.1",
+        "phpunit/phpunit": "^11.5",
+        "rector/rector": "^2.0",
+        "squizlabs/php_codesniffer": "^3.11",
+        "symfony/maker-bundle": "^1.62",
+        "symfony/phpunit-bridge": "^7.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "replace": {
+        "paragonie/random_compat": "2.*"
+    },
+    "scripts": {
+        "auto-scripts": {
+            "cache:clear": "symfony-cmd",
+            "assets:install %PUBLIC_DIR%": "symfony-cmd"
+        },
+        "post-install-cmd": [
+            "@auto-scripts"
+        ],
+        "post-update-cmd": [
+            "@auto-scripts"
+        ]
+    },
+    "conflict": {
+        "symfony/symfony": "*"
+    },
+    "extra": {
+        "symfony": {
+            "allow-contrib": true
+        }
+    }
+}

@@ -1,0 +1,84 @@
+services:
+  php_image: &php_image
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: image
+    working_dir: /app
+    volumes:
+      - ./:/app
+    init: true
+
+  php_dev: &php_dev
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    working_dir: /app
+    volumes:
+      - ./:/app
+    init: true
+
+  composer:
+    <<: *php_image
+    environment:
+      SSH_AUTH_SOCK: "/ssh-agent"
+      COMPOSER_CACHE_DIR: "/app/.composer/cache/"
+    volumes:
+      - ./:/app
+      - "/run/host-services/ssh-auth.sock:/ssh-agent"
+      - "$HOME/.ssh/known_hosts:$HOME/.ssh/known_hosts:ro"
+      - "$HOME/.ssh:/home/gitlab-runner/.ssh:ro"
+    entrypoint: bin/composer
+    dns:
+      - 10.35.2.251
+
+  bash:
+    <<: *php_image
+    entrypoint: bash
+
+  unit-tests:
+    <<: *php_dev
+    entrypoint: php ./bin/phpunit --no-coverage
+
+  unit-tests-coverage:
+    <<: *php_dev
+    entrypoint: php -d xdebug.mode=coverage ./bin/phpunit --coverage-text --colors=never
+
+  phpcbf:
+    <<: *php_image
+    entrypoint: php ./bin/phpcbf --standard=./phpcs.xml --extensions=php --no-cache -v -n --report-full --report-summary
+
+  php-cs-fixer:
+    image: git.byside-nos.local:5050/engineering/container-images/php-cs-fixer
+    working_dir: /app
+    volumes:
+      - "./:/app"
+    entrypoint: "bin/entrypoint/php-cs-fixer.sh"
+
+  php-cs-fixer-develop:
+    image: git.byside-nos.local:5050/engineering/container-images/php-cs-fixer
+    working_dir: /app
+    volumes:
+      - "./:/app"
+    entrypoint: "bin/entrypoint/php-cs-fixer.sh --branch develop"
+
+  rector:
+    <<: *php_image
+    entrypoint: bin/rector
+
+  phpstan:
+    <<: *php_image
+    working_dir: /app
+    volumes:
+      - "./:/app"
+      - ./.git/:/app/.git/
+    entrypoint: bash bin/entrypoint/phpstan.sh
+
+  lint:
+    <<: *php_image
+    entrypoint: bash bin/entrypoint/lint.sh
+
+  issue_print:
+    <<: *php_image
+    entrypoint: bin/console issue:print

@@ -1,0 +1,344 @@
+variables:
+  PROJECT_NAME: "boilerplate"
+  CORRECT_CI_PROJECT_NAME: "boilerplate"
+  PROJECT_PATH: "/var/byside-symfony-restapi-boilerplate"
+  PROJECT_PATH_CACHE: "/var/cache/byside-symfony-restapi-boilerplate"
+  PROJECT_PATH_LOG: "/var/log/byside-symfony-restapi-boilerplate"
+  WEBCARE_CONFIGS_PROJECT_FOLDER: "boilerplate"
+  ROLLBACK: ''
+  PLOY_VERSION: 2.0.0
+  CONFIGS_VERSION: master # or tag
+  BOILERPLATE_DEV1_MACHINES: "php01.dev1.byside-nos.local"
+  BOILERPLATE_PRE1_MACHINES: "php01.pre1.byside-nos.local"
+  BOILERPLATE_WE1_MACHINES: "php01.we1.byside-nos.local"
+  DEPLOY_PATH: "/var/webcare${CI_ENVIRONMENT_NAME}_source/${CI_PROJECT_NAME}"
+
+default:
+  tags:
+    - docker-shell-aws
+
+before_script:
+  - git clone -c advice.detachedHead=false --depth 1 --branch $PLOY_VERSION http://gitlab-ci-token:${CI_JOB_TOKEN}@git.byside-nos.local/devops/ploy.git
+  - ploy/docker-login-ci
+  - ploy/docker-login-ci-aws-ecr
+  - eval $(ssh-agent -s | tee /tmp/${CI_JOB_ID}-ssh-agent.env)
+  - echo "$SSH_PRIVATE_KEY_GITLAB_RUNNER" | tr -d '\r' | ssh-add -
+
+after_script:
+  - . /tmp/${CI_JOB_ID}-ssh-agent.env
+  - kill $SSH_AGENT_PID
+  - rm /tmp/${CI_JOB_ID}-ssh-agent.env
+
+# Define pipeline stages
+stages:
+  - deploy-feature
+  - syntax
+  - tests
+  - deploy-releaseBranch
+  - build-images
+  - deploy
+  - rollback
+
+PHP CS Fixer:
+  stage: syntax
+  script:
+    - bin/docker-compose-run-ci.sh php-cs-fixer
+  except:
+    - /^hotfix.*$/
+
+Lint:
+  stage: syntax
+  script:
+    - bin/docker-compose-run-ci.sh lint
+  except:
+    - /^hotfix.*$/
+
+
+PHPSTAN:
+  stage: syntax
+  needs: []
+  allow_failure: true
+  script:
+    - bin/docker-compose-run-ci.sh phpstan
+  except:
+    - /^hotfix.*$/
+    - tags
+    - master
+
+Unit Tests with Coverage:
+  stage: tests
+  coverage: '/^\s*Lines:\s*\d+.\d+\%/'
+  artifacts:
+    name: "PHPUnit Coverage"
+    paths:
+      - build/
+  script:
+    - mkdir -p build/coverage
+    - bin/docker-compose-run-ci.sh unit-tests-coverage --process-isolation
+
+.build-images: &build-images
+  - ploy/docker-buildx-create
+  - bin/docker-build-ci.sh -t $CI_REGISTRY_IMAGE:$IMAGE_VERSION --target prod .
+  # - bin/docker-build-ci.sh -t $CI_REGISTRY_IMAGE/issue-print:$IMAGE_VERSION --target issue_print .
+
+.deploy-image: &deploy-image
+  - ploy/docker-deploy
+    --machines "$MACHINES"
+    --file docker-compose-deploy.yml
+    --version "$IMAGE_VERSION"
+    --env-file .env
+    --folder "/app/$PROJECT_NAME"
+
+.get-configs: &get-configs
+  - echo 'Copy configs...'
+  - git clone -c advice.detachedHead=false --depth 1 --branch $CONFIGS_VERSION http://gitlab-ci-token:${CI_JOB_TOKEN}@git.byside-nos.local/security/webcare-configs.git
+  - cp -f webcare-configs/${WEBCARE_CONFIGS_PROJECT_FOLDER}/${CI_ENVIRONMENT_NAME}/.env .env
+  - rm -rf webcare-configs
+
+.deploy-docker: &deploy-docker
+  - *build-images
+  - *get-configs
+  - *deploy-image
+
+.write-version: &write-version
+  - ssh -tt gitlab-runner@container01.byside-nos.local "sudo echo "${CI_COMMIT_BRANCH},${CI_COMMIT_SHORT_SHA},$(date '+%Y-%m-%d %H:%M:%S')" > /opt/atlas-ui-container/src/projects_version/${ATLAS_PATH_AUX}${CORRECT_CI_PROJECT_NAME}.txt"
+
+
+# Deploy to DEV1-Docker:
+#    stage: deploy-feature
+#    tags:
+#      - docker-shell
+#    environment:
+#      name: DEV1
+#    variables:
+#      MACHINES: "$BOILERPLATE_DEV1_MACHINES"
+#      ATLAS_PATH_AUX: ""
+#      IMAGE_VERSION: "$CI_COMMIT_REF_SLUG"
+#    when: manual
+#    script:
+#      - *deploy-docker
+#      - *write-version
+
+# Deploy to PRE1-Docker:
+#    stage: deploy-feature
+#    tags:
+#      - docker-shell
+#    environment:
+#      name: PRE1
+#    variables:
+#      MACHINES: "$BOILERPLATE_PRE1_MACHINES"
+#      ATLAS_PATH_AUX: "PRE1/"
+#      IMAGE_VERSION: "$CI_COMMIT_REF_SLUG"
+#    when: manual
+#    script:
+#      - *deploy-docker
+#      - *write-version
+
+# Deploy Release-Docker:
+#    stage: deploy-releaseBranch
+#    tags:
+#      - docker-shell
+#    environment:
+#      name: PRE1
+#    variables:
+#      MACHINES: "$BOILERPLATE_PRE1_MACHINES"
+#      ATLAS_PATH_AUX: "PRE1/"
+#      IMAGE_VERSION: "$CI_COMMIT_REF_SLUG"
+#    only:
+#      - /^release.*$/
+#    script:
+#      - *deploy-docker
+#      - *write-version
+
+# Deploy to WE1-Docker:
+#    stage: deploy
+#    tags:
+#      - docker-shell
+#    environment:
+#      name: WE1
+#    variables:
+#      MACHINES: "$BOILERPLATE_WE1_MACHINES"
+#      IMAGE_VERSION: "$CI_COMMIT_TAG"
+#    only:
+#      - tags
+#    when: manual
+#    script:
+#      - *deploy-docker
+
+.rollback: &rollback
+  stage: rollback
+  tags:
+    - docker-shell
+  script:
+    - *get-configs
+    - ploy/docker-rollback
+      --machines "$MACHINES"
+      --file docker-compose-deploy.yml
+      --env-file .env
+      --folder "/app/$PROJECT_NAME"
+  only:
+    - tags
+  when: manual
+
+Rollback WE1-Docker:
+  environment:
+    name: WE1
+  variables:
+    MACHINES: "$BOILERPLATE_WE1_MACHINES"
+  <<: *rollback
+
+
+.export-image-version: &export-image-version
+  - export IMAGE_VERSION=$([ -n "$CI_COMMIT_TAG" ] && echo $CI_COMMIT_TAG || echo $CI_COMMIT_REF_SLUG)
+
+.copy-configs: &copy-configs
+  - rm -rf webcare-configs
+  - cp -a webcare-configs/${WEBCARE_CONFIGS_PROJECT_FOLDER} ${WEBCARE_CONFIGS_PROJECT_FOLDER}-configs
+
+# Build Boilerplate image:
+#   stage: build-images
+#   needs: [ ]
+#   script:
+#     - *copy-configs
+#     - *export-image-version
+#     - ploy/build-images
+#       --image "cmec/${PROJECT_NAME}"
+#       --version "$IMAGE_VERSION"
+#       --target "prod"
+#       --context .
+
+# Build nginx image:
+#   stage: build-images
+#   needs: [ ]
+#   script:
+#     - *export-image-version
+#     - ploy/build-images
+#       --image "cmec/${PROJECT_NAME}/nginx"
+#       --version "$IMAGE_VERSION"
+#       --buildarg "NGINX_BASE_IMAGE=$(ploy/aws-ecr)/cmec/base/nginx-1.27:latest"
+#       --context nginx/
+#       --dockerfile "nginx/Dockerfile"
+
+# .build-image: &build-image
+#   stage: build-images
+#   needs: [ ]
+#   script:
+#     - *export-image-version
+#     - ploy/build-images
+#       --image "cmec/${PROJECT_NAME}/workers/$IMAGE"
+#       --version "$IMAGE_VERSION"
+#       --target "$TARGET"
+#       --context .
+
+# Build issue-print image: # This is an worker example
+#   variables:
+#     IMAGE: "issue-print"
+#     TARGET: "issue_print"
+#   <<: *build-image
+
+.zone-variable: &zone-variable
+  - LOWERCASE_ENVIRONMENT=$(echo "${CI_ENVIRONMENT_NAME}" | tr '[:upper:]' '[:lower:]')
+  - export ZONE=$LOWERCASE_ENVIRONMENT
+
+.deploy-aws: &deploy-aws
+  - *zone-variable
+  - *export-image-version
+  - ploy/aws-blue-green-deploy
+    --application $PROJECT_NAME
+    --file docker-compose-deploy-aws.yml
+    --version "${IMAGE_VERSION}"
+    --zone "${ZONE}"
+
+# Deploy to SA1 (aws):
+#   stage: deploy
+#   needs:
+#     - job: Build Boilerplate image
+#       artifacts: false
+#     - job: Build nginx image
+#       artifacts: false
+#   environment:
+#     name: SA1
+#   script:
+#     - *deploy-aws
+#   when: manual
+#   only:
+#     - tags
+
+# Deploy to WE2 (aws):
+#   stage: deploy
+#   needs:
+#     - job: Build Boilerplate image
+#       artifacts: false
+#     - job: Build nginx image
+#       artifacts: false
+#   environment:
+#     name: WE2
+#   script:
+#     - *deploy-aws
+#   when: manual
+#   only:
+#     - tags
+
+.rollback-aws: &rollback-aws
+  - *zone-variable
+  - ploy/aws-blue-green-rollback
+    --application $PROJECT_NAME
+    --zone "${ZONE}"
+
+# Rollback SA1 (aws):
+#   stage: rollback
+#   environment:
+#     name: SA1
+#   script:
+#     - *rollback-aws
+#   when: manual
+#   only:
+#     - tags
+
+# Rollback WE2 (aws):
+#   stage: rollback
+#   environment:
+#     name: WE2
+#   script:
+#     - *rollback-aws
+#   when: manual
+#   only:
+#     - tags
+
+# Deploy workers to SA1 (aws):
+#   stage: deploy
+#   environment:
+#     name: SA1
+#   script:
+#     - cp -f webcare-configs/${WEBCARE_CONFIGS_PROJECT_FOLDER:}/SA1-AWS/.env .env
+#     - *export-image-version
+#     - *zone-variable
+#     - ploy/docker-deploy-aws
+#       --machines "batch-01.sa1.aws.cmec.cloud"
+#       --file docker-compose-deploy-workers-aws.yml
+#       --version "${IMAGE_VERSION}"
+#       --zone $ZONE
+#       --env-file .env
+#       --folder /app/$PROJECT_NAME
+#   when: manual
+#   only:
+#     - tags
+
+# Deploy workers to WE2 (aws):
+#   stage: deploy
+#   environment:
+#     name: WE2
+#   script:
+#     - cp -f webcare-configs/${WEBCARE_CONFIGS_PROJECT_FOLDER:}/WE2-AWS/.env .env
+#     - *export-image-version
+#     - *zone-variable
+#     - ploy/docker-deploy-aws
+#       --machines "batch-01.we2.aws.cmec.cloud"
+#       --file docker-compose-deploy-workers-aws.yml
+#       --version "${IMAGE_VERSION}"
+#       --zone $ZONE
+#       --env-file .env
+#       --folder /app/$PROJECT_NAME
+#   when: manual
+#   only:
+#     - tags

@@ -1,0 +1,16 @@
+healthCheck:
+    path: /health
+    controller: App\Module\Health\Controller\HealthController::healthCheck
+    methods: GET
+
+createIssue:
+    path: /issue
+    controller: App\Module\Issue\Controller\IssueController::createIssue
+    methods: POST
+
+getIssue:
+    path: /issue/{id}
+    controller: App\Module\Issue\Controller\IssueController::getIssue
+    methods: GET
+    requirements:
+        id: \d+

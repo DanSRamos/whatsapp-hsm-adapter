@@ -1,0 +1,5 @@
+ARG NGINX_BASE_IMAGE
+
+FROM $NGINX_BASE_IMAGE
+
+COPY ./ /etc/nginx/

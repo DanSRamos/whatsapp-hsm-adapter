@@ -1,0 +1,23 @@
+x-enable-slow-log-trace: &enable-slow-log-trace
+  cap_add:
+    - SYS_PTRACE
+
+name: boilerplate
+services:
+  boilerplate:
+    image: ${ECR}/cmec/boilerplate:${VERSION}
+    init: true
+    environment:
+      ZONE: ${ZONE}
+      SERVICE: boilerplate
+      CONFIG: ${CONFIG}
+    <<: *enable-slow-log-trace
+    restart: always
+
+  nginx:
+    image: ${ECR}/cmec/boilerplate/nginx:${VERSION}
+    ports:
+      - "443:443"
+    restart: always
+    depends_on:
+      - boilerplate

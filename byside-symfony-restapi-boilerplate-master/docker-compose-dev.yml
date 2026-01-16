@@ -1,0 +1,18 @@
+services:
+  haproxy:
+    image: haproxy:2.2.1
+    volumes:
+      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    ports:
+      - "9000:9000"
+      - "10000:10000"
+
+  byside-symfony-restapi-boilerplate:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+      target: dev
+    working_dir: /app
+    volumes:
+      - ./:/app
+    init: true

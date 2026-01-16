@@ -1,0 +1,19 @@
+Environment=FILE_NAME=consumer_example
+Environment=PROJECT_NAME=boilerplate
+Environment=PROJECT_PATH=byside-symfony-restapi-boilerplate
+
+[Unit]
+Description=Explanation of what this service does
+After=syslog.target network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/var/${PROJECT_PATH}/current
+ExecStart=/var/${PROJECT_PATH}/current/bin/console rabbit:consumers ${FILE_NAME}
+PIDFile=/var/run/${PROJECT_NAME}_${FILE_NAME}.pid
+Restart=always
+RestartSec=1
+
+[Install]
+WantedBy=multi-user.target

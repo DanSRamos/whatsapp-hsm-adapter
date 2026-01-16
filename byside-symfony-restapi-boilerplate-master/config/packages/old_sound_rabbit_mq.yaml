@@ -1,0 +1,25 @@
+old_sound_rabbit_mq:
+  connections:
+    default:
+      host: "%env(resolve:RABBITMQ_HOST)%"
+      port: "%env(resolve:RABBITMQ_PORT)%"
+      user: "%env(resolve:RABBITMQ_USER)%"
+      password: "%env(resolve:RABBITMQ_PASSWORD)%"
+      vhost: "%env(resolve:RABBITMQ_PROJECT_VHOST)%"
+      connection_timeout: 10
+#   producers:
+#     OutboundProducer:
+#       class: App\Module\Event\Producer\OutboundProducer
+#       connection: default
+#       exchange_options:
+#         name: Boilerplate
+#         type: direct
+#   consumers:
+#     InboundConsumer:
+#       connection: default
+#       exchange_options: { name: "Boilerplate", type: direct }
+#       queue_options: { name: "Boilerplate" }
+#       callback: App\Module\Event\Consumer\InboundConsumer
+#       graceful_max_execution:
+#             timeout: 600 # 10 minutes
+#             exit_code: 10 # default is 0

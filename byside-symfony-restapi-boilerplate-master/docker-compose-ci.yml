@@ -1,0 +1,53 @@
+services:
+  .php_image: &php_image
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: ci
+      ssh:
+        - default
+      extra_hosts:
+        - git.byside-nos.local:10.36.2.32
+    working_dir: /app
+    init: true
+
+  composer:
+    <<: *php_image
+    environment:
+      SSH_AUTH_SOCK: "/ssh-agent"
+      COMPOSER_CACHE_DIR: "/app/.composer/cache/"
+    volumes:
+      - ./:/app
+      - "/run/host-services/ssh-auth.sock:/ssh-agent"
+      - "$HOME/.ssh/known_hosts:$HOME/.ssh/known_hosts:ro"
+      - "$HOME/.ssh:/home/gitlab-runner/.ssh:ro"
+    entrypoint: bin/composer
+
+  bash:
+    <<: *php_image
+    entrypoint: bash
+
+  unit-tests:
+    <<: *php_image
+    entrypoint: php ./bin/phpunit --no-coverage
+
+  unit-tests-coverage:
+    <<: *php_image
+    entrypoint: php ./bin/phpunit --coverage-text --colors=never
+
+  php-cs-fixer:
+    image: git.byside-nos.local:5050/engineering/container-images/php-cs-fixer
+    working_dir: /app
+    volumes:
+      - "./:/app"
+    entrypoint: "bin/entrypoint/php-cs-fixer.sh --ci --branch master"
+
+  phpstan:
+    <<: *php_image
+    volumes:
+      - ./.git/:/app/.git/
+    entrypoint: bash bin/entrypoint/phpstan.sh
+
+  lint:
+    <<: *php_image
+    entrypoint: bash bin/entrypoint/lint.sh

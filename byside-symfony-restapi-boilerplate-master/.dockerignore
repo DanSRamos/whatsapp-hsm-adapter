@@ -1,0 +1,16 @@
+*
+!/.env
+!/.php-cs-fixer.dist.php
+!/bin/
+!/composer.json
+!/composer.lock
+!/config/
+!/cronjob
+!/nginx/
+!/phpcs.xml
+!/phpstan.neon
+!/phpunit.xml.dist
+!/public/
+!/src/
+!/symfony.lock
+!/tests/

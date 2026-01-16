@@ -1,0 +1,18 @@
+x-common: &common
+  env_file:
+    - .env
+  restart: always
+  init: true
+  logging:
+    driver: gelf
+    options:
+      gelf-address: "udp://central-logs.byside-nos.local:12514"
+
+name: boilerplate
+services:
+  issue-print:
+    image: ${ECR}/cmec/boilerplate/workers/issue-print:${VERSION}
+    environment:
+      ZONE: ${ZONE}
+      SERVICE: boilerplate-issue-print
+    <<: *common

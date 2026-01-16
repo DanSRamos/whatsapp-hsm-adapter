@@ -1,0 +1,23 @@
+doctrine:
+    dbal:
+        dbname: '%env(resolve:DATABASE_NAME)%'
+        host: '%env(resolve:DATABASE_HOST)%'
+        port: '%env(resolve:DATABASE_PORT)%'
+        user: '%env(resolve:DATABASE_USER)%'
+        password: '%env(resolve:DATABASE_PASS)%'
+        driver: pdo_mysql
+        charset: utf8
+        logging: '%kernel.debug%'
+        server_version: '%env(resolve:DATABASE_VERSION)%'
+        url: '%env(DATABASE_URL)%'
+
+    orm:
+        auto_generate_proxy_classes: true
+        naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
+        auto_mapping: true
+        mappings:
+            App:
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/'
+                prefix: 'App\'
+                alias: App

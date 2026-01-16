@@ -1,0 +1,23 @@
+x-logging: &default-logging
+  driver: gelf
+  options:
+    gelf-address: "udp://central-logs.byside-nos.local:12514"
+
+name: boilerplate
+services:
+  boilerplate:
+    image: $CI_REGISTRY_IMAGE:$VERSION
+    init: true
+    env_file:
+      - .env
+    ports:
+      - "9400:9000"
+    restart: always
+
+  issue-print:
+    image: $CI_REGISTRY_IMAGE/boilerplate/issue-print:$VERSION
+    init: true
+    env_file:
+      - .env
+    restart: always
+    logging: *default-logging

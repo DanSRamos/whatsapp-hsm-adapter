@@ -1,0 +1,16 @@
+ploy
+tests
+docker/
+.editorconfig
+.env.local.php
+.env.local.example
+.env.test
+.gitignore
+.php_cs.dist
+.php-cs-fixer.dist.php
+docker-compose.yml
+phpcs.xml
+phpstan.neon
+phpunit.xml.dist
+.git/*
+.git*
