@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Test API</title>
+  </head>
+  <body>
+    <h1>Test API</h1>
+    <button onclick="testTemplates()">Test Get Templates</button>
+    <button onclick="testMessages()">Test Get Messages</button>
+    <pre id="output"></pre>
+
+    <script>
+      async function testTemplates() {
+        const output = document.getElementById("output");
+        output.textContent = "Loading templates...";
+
+        try {
+          const response = await fetch("api.php?action=get_templates");
+          const data = await response.json();
+          output.textContent = JSON.stringify(data, null, 2);
+        } catch (error) {
+          output.textContent = "Error: " + error.message;
+        }
+      }
+
+      async function testMessages() {
+        const output = document.getElementById("output");
+        output.textContent = "Loading messages...";
+
+        try {
+          const response = await fetch("api.php?action=get_messages");
+          const data = await response.json();
+          output.textContent = JSON.stringify(data, null, 2);
+        } catch (error) {
+          output.textContent = "Error: " + error.message;
+        }
+      }
+    </script>
+  </body>
+</html>
