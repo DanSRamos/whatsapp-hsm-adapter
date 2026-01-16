@@ -1,0 +1,29 @@
+[
+  {
+    "from": "351961725398",
+    "to": "351927587119",
+    "text": "Sim",
+    "messageId": "test-msg-001",
+    "timestamp": "2026-01-16T19:05:23Z",
+    "type": "incoming",
+    "messageType": "text"
+  },
+  {
+    "from": "351966141650",
+    "to": "351927587119",
+    "text": "Olá, gostaria de mais informações",
+    "messageId": "test-msg-002",
+    "timestamp": "2026-01-16T19:03:15Z",
+    "type": "incoming",
+    "messageType": "text"
+  },
+  {
+    "from": "351961725398",
+    "to": "351927587119",
+    "text": "Button: Sim",
+    "messageId": "test-msg-003",
+    "timestamp": "2026-01-16T18:58:42Z",
+    "type": "incoming",
+    "messageType": "button"
+  }
+]
