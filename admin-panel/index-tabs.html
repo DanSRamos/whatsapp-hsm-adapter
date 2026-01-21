@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="pt">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Multi-Platform Messaging Admin Panel</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, sans-serif;
+        background: #f5f5f5;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+
+      header {
+        background: #25d366;
+        color: white;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      h1 {
+        font-size: 24px;
+        margin-bottom: 5px;
+      }
+
+      .subtitle {
+        opacity: 0.9;
+        font-size: 14px;
+      }
+
+      .tab-navigation {
+        background: white;
+        border-radius: 8px;
+        padding: 10px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .tab-button {
+        padding: 12px 24px;
+        border: none;
+        background: transparent;
+        color: #666;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        border-radius: 4px;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .tab-button:hover {
+        background: #f5f5f5;
+        color: #333;
+      }
+
+      .tab-button.active {
+        background: #25d366;
+        color: white;
+      }
+
+      .tab-content {
+        display: none;
+      }
+
+      .tab-content.active {
+        display: block;
+      }
+
+      .quick-links {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .quick-links h2 {
+        font-size: 18px;
+        margin-bottom: 15px;
+        color: #333;
+      }
+
+      .link-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 15px;
+      }
+
+      .link-card {
+        padding: 15px;
+        background: #f9f9f9;
+        border-radius: 8px;
+        text-decoration: none;
+        color: inherit;
+        transition: all 0.2s;
+        border: 2px solid transparent;
+        display: block;
+      }
+
+      .link-card:hover {
+        background: #fff;
+        border-color: #25d366;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .link-card h3 {
+        font-size: 16px;
+        margin-bottom: 5px;
+        color: #333;
+      }
+
+      .link-card p {
+        font-size: 13px;
+        color: #666;
+        line-height: 1.4;
+      }
+
+      .info-box {
+        margin-top: 30px;
+        padding: 20px;
+        background: #e3f2fd;
+        border-radius: 8px;
+        border-left: 4px solid #2196f3;
+      }
+
+      .info-box h3 {
+        color: #1565c0;
+        margin-bottom: 10px;
+      }
+
+      .info-box p {
+        color: #666;
+        line-height: 1.6;
+      }
+
+      @media (max-width: 768px) {
+        .tab-navigation {
+          flex-direction: column;
+        }
+
+        .link-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>📱 Multi-Platform Messaging Admin Panel</h1>
+        <div class="subtitle">
+          Gerir mensagens via WhatsApp, Instagram e Facebook Messenger
+        </div>
+      </header>
+
+      <div class="tab-navigation">
+        <button class="tab-button active" onclick="switchTab('messages')">
+          💬 Mensagens
+        </button>
+        <button class="tab-button" onclick="switchTab('documentation')">
+          📚 Documentação
+        </button>
+        <button class="tab-button" onclick="switchTab('monitoring')">
+          📊 Alertas & Monitoramento
+        </button>
+      </div>
+
+      <!-- Tab: Messages -->
+      <div id="tab-messages" class="tab-content active">
+        <div class="quick-links">
+          <h2>💬 Gestão de Mensagens</h2>
+          <div class="link-grid">
+            <a href="index.html" class="link-card" target="_blank">
+              <h3>📤 Enviar Mensagens</h3>
+              <p>
+                Interface completa para enviar mensagens via WhatsApp, Instagram
+                e Messenger
+              </p>
+            </a>
+            <a href="index.html#templates" class="link-card" target="_blank">
+              <h3>📋 Templates HSM</h3>
+              <p>Gerir e usar templates aprovados para WhatsApp</p>
+            </a>
+            <a href="index.html#messages" class="link-card" target="_blank">
+              <h3>📨 Mensagens Recebidas</h3>
+              <p>
+                Visualizar webhooks e mensagens recebidas de todas as
+                plataformas
+              </p>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Documentation -->
+      <div id="tab-documentation" class="tab-content">
+        <div class="quick-links">
+          <h2>📚 Documentação do Sistema</h2>
+
+          <h3 style="margin-top: 20px; margin-bottom: 10px; color: #666">
+            🚀 Guias de Setup
+          </h3>
+          <div class="link-grid">
+            <a
+              href="../docs/INSTAGRAM_SETUP.md"
+              class="link-card"
+              target="_blank"
+            >
+              <h3>📱 Instagram Setup</h3>
+              <p>
+                Como configurar credenciais Meta e conectar Instagram
+                Professional Account
+              </p>
+            </a>
+            <a
+              href="../docs/META_CREDENTIALS_SETUP.md"
+              class="link-card"
+              target="_blank"
+            >
+              <h3>🔑 Meta Credentials</h3>
+              <p>
+                Guia completo para obter e configurar credenciais da Meta API
+              </p>
+            </a>
+            <a
+              href="../docs/META_PRODUCTION_DEPLOYMENT.md"
+              class="link-card"
+              target="_blank"
+            >
+              <h3>🏭 Production Deployment</h3>
+              <p>Preparação e configuração para ambiente de produção</p>
+            </a>
+          </div>
+
+          <h3 style="margin-top: 30px; margin-bottom: 10px; color: #666">
+            📖 Documentação Técnica
+          </h3>
+          <div class="link-grid">
+            <a href="api-docs.html" class="link-card">
+              <h3>🔌 API Documentation (Interactive)</h3>
+              <p>
+                Documentação interativa OpenAPI com Swagger UI - teste os
+                endpoints diretamente
+              </p>
+            </a>
+            <a href="test-swagger.html" class="link-card">
+              <h3>🧪 API Documentation (Simple Test)</h3>
+              <p>
+                Versão minimalista do Swagger UI para testes rápidos e debugging
+              </p>
+            </a>
+            <a href="../docs/API.md" class="link-card" target="_blank">
+              <h3>📄 API Documentation (Markdown)</h3>
+              <p>Referência completa da API REST em formato texto</p>
+            </a>
+            <a
+              href="../docs/META_REQUEST_ADAPTER.md"
+              class="link-card"
+              target="_blank"
+            >
+              <h3>🔄 Meta Request Adapter</h3>
+              <p>Como o sistema adapta requests para Instagram e Messenger</p>
+            </a>
+            <a
+              href="../docs/TROUBLESHOOTING.md"
+              class="link-card"
+              target="_blank"
+            >
+              <h3>🔧 Troubleshooting</h3>
+              <p>Soluções para problemas comuns e debugging</p>
+            </a>
+          </div>
+
+          <h3 style="margin-top: 30px; margin-bottom: 10px; color: #666">
+            🔗 Links Úteis
+          </h3>
+          <div class="link-grid">
+            <a
+              href="https://developers.facebook.com/docs/messenger-platform"
+              class="link-card"
+              target="_blank"
+            >
+              <h3>Meta Messenger Platform</h3>
+              <p>Documentação oficial da Meta para Messenger</p>
+            </a>
+            <a
+              href="https://developers.facebook.com/docs/messenger-platform/instagram"
+              class="link-card"
+              target="_blank"
+            >
+              <h3>Meta Instagram Messaging</h3>
+              <p>Documentação oficial da Meta para Instagram</p>
+            </a>
+            <a
+              href="https://www.infobip.com/docs/api"
+              class="link-card"
+              target="_blank"
+            >
+              <h3>Infobip API</h3>
+              <p>Documentação da Infobip para WhatsApp</p>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Monitoring -->
+      <div id="tab-monitoring" class="tab-content">
+        <div class="quick-links">
+          <h2>📊 Alertas e Monitoramento</h2>
+          <div class="link-grid">
+            <a href="monitoring.html" class="link-card" target="_blank">
+              <h3>📊 Dashboard Completo</h3>
+              <p>
+                Aceder ao dashboard completo de monitoramento com métricas em
+                tempo real
+              </p>
+            </a>
+            <a
+              href="monitoring.html#rate-limits"
+              class="link-card"
+              target="_blank"
+            >
+              <h3>⏱️ Rate Limits</h3>
+              <p>Monitorar uso de rate limits (horário e diário)</p>
+            </a>
+            <a
+              href="monitoring.html#circuit-breaker"
+              class="link-card"
+              target="_blank"
+            >
+              <h3>🔌 Circuit Breaker</h3>
+              <p>Verificar estado do circuit breaker e estatísticas</p>
+            </a>
+            <a href="monitoring.html#alerts" class="link-card" target="_blank">
+              <h3>🚨 Alertas</h3>
+              <p>Ver alertas recentes e estatísticas por severidade</p>
+            </a>
+            <a href="monitoring.html#health" class="link-card" target="_blank">
+              <h3>💚 System Health</h3>
+              <p>Verificar saúde geral do sistema</p>
+            </a>
+            <a
+              href="monitoring.html#performance"
+              class="link-card"
+              target="_blank"
+            >
+              <h3>📈 Performance</h3>
+              <p>Métricas de performance e tempos de resposta</p>
+            </a>
+          </div>
+
+          <div class="info-box">
+            <h3>ℹ️ Nota sobre Monitoramento</h3>
+            <p>
+              O dashboard de monitoramento requer que os endpoints da API
+              estejam implementados no backend. Consulte
+              <strong>docs/META_PRODUCTION_DEPLOYMENT.md</strong> para
+              instruções de implementação.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function switchTab(tab) {
+        // Update button states
+        document.querySelectorAll(".tab-button").forEach((btn) => {
+          btn.classList.remove("active");
+        });
+        event.target.classList.add("active");
+
+        // Hide all tab contents
+        document.querySelectorAll(".tab-content").forEach((content) => {
+          content.classList.remove("active");
+        });
+
+        // Show selected tab content
+        const tabId = "tab-" + tab;
+        document.getElementById(tabId).classList.add("active");
+      }
+    </script>
+  </body>
+</html>

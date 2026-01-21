@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use WhatsApp\Adapter\Http\Controllers\WebhookController;
-use WhatsApp\Adapter\Providers\WhatsAppProviderFactory;
-use WhatsApp\Adapter\Providers\WhatsAppProviderInterface;
+use WhatsApp\Adapter\Providers\MessagingProviderFactory;
+use WhatsApp\Adapter\Providers\MessagingProviderInterface;
 use WhatsApp\Adapter\Services\MessageService;
 use WhatsApp\Adapter\Services\TemplateService;
 use WhatsApp\Adapter\Models\IncomingMessage;
@@ -13,7 +13,7 @@ use Psr\Http\Message\StreamInterface;
 use Psr\Log\NullLogger;
 
 beforeEach(function () {
-    $this->providerFactory = Mockery::mock(WhatsAppProviderFactory::class);
+    $this->providerFactory = Mockery::mock(MessagingProviderFactory::class);
     $this->messageService = Mockery::mock(MessageService::class);
     $this->templateService = Mockery::mock(TemplateService::class);
     $this->logger = new NullLogger();
@@ -55,7 +55,7 @@ describe('WebhookController Property Tests', function () {
                 'timestamp' => time()
             ];
             
-            $provider = Mockery::mock(WhatsAppProviderInterface::class);
+            $provider = Mockery::mock(MessagingProviderInterface::class);
             $provider->shouldReceive('getName')
                 ->andReturn('test-provider');
             $provider->shouldReceive('validateWebhook')
@@ -116,7 +116,7 @@ describe('WebhookController Property Tests', function () {
             Mockery::close();
             
             // Reset mocks for next iteration
-            $this->providerFactory = Mockery::mock(WhatsAppProviderFactory::class);
+            $this->providerFactory = Mockery::mock(MessagingProviderFactory::class);
             $this->messageService = Mockery::mock(MessageService::class);
             $this->templateService = Mockery::mock(TemplateService::class);
             $this->controller = new WebhookController(
@@ -142,7 +142,7 @@ describe('WebhookController Property Tests', function () {
                 'content' => 'Test message'
             ];
             
-            $provider = Mockery::mock(WhatsAppProviderInterface::class);
+            $provider = Mockery::mock(MessagingProviderInterface::class);
             $provider->shouldReceive('getName')
                 ->andReturn('test-provider');
             $provider->shouldReceive('validateWebhook')
@@ -212,7 +212,7 @@ describe('WebhookController Property Tests', function () {
             Mockery::close();
             
             // Reset mocks for next iteration
-            $this->providerFactory = Mockery::mock(WhatsAppProviderFactory::class);
+            $this->providerFactory = Mockery::mock(MessagingProviderFactory::class);
             $this->messageService = Mockery::mock(MessageService::class);
             $this->templateService = Mockery::mock(TemplateService::class);
             $this->controller = new WebhookController(
@@ -236,7 +236,7 @@ describe('WebhookController Property Tests', function () {
                 'status' => ['approved', 'rejected', 'pending'][rand(0, 2)]
             ];
             
-            $provider = Mockery::mock(WhatsAppProviderInterface::class);
+            $provider = Mockery::mock(MessagingProviderInterface::class);
             $provider->shouldReceive('getName')
                 ->andReturn('test-provider');
             $provider->shouldReceive('validateWebhook')
@@ -297,7 +297,7 @@ describe('WebhookController Property Tests', function () {
             Mockery::close();
             
             // Reset mocks for next iteration
-            $this->providerFactory = Mockery::mock(WhatsAppProviderFactory::class);
+            $this->providerFactory = Mockery::mock(MessagingProviderFactory::class);
             $this->messageService = Mockery::mock(MessageService::class);
             $this->templateService = Mockery::mock(TemplateService::class);
             $this->controller = new WebhookController(

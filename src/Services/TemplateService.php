@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace WhatsApp\Adapter\Services;
 
 use WhatsApp\Adapter\Models\Template;
-use WhatsApp\Adapter\Providers\WhatsAppProviderFactory;
+use WhatsApp\Adapter\Providers\MessagingProviderFactory;
 use WhatsApp\Adapter\Repositories\TemplateRepositoryInterface;
 use Psr\Log\LoggerInterface;
 
@@ -16,7 +16,7 @@ class TemplateService
     private const CACHE_TTL = 3600; // 1 hora
 
     public function __construct(
-        private WhatsAppProviderFactory $providerFactory,
+        private MessagingProviderFactory $providerFactory,
         private TemplateRepositoryInterface $templateRepository,
         private CacheInterface $cache,
         private LoggerInterface $logger

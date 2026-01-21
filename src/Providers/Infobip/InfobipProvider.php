@@ -19,12 +19,12 @@ use WhatsApp\Adapter\Providers\Models\ProviderMessageStatus;
 use WhatsApp\Adapter\Providers\Models\ProviderSendResult;
 use WhatsApp\Adapter\Providers\Models\ProviderTemplate;
 use WhatsApp\Adapter\Providers\Models\TemplateUpdate;
-use WhatsApp\Adapter\Providers\WhatsAppProviderInterface;
+use WhatsApp\Adapter\Providers\MessagingProviderInterface;
 
 /**
  * Infobip WhatsApp provider implementation
  */
-class InfobipProvider implements WhatsAppProviderInterface
+class InfobipProvider implements MessagingProviderInterface
 {
     private const API_VERSION = '1';
 
@@ -414,6 +414,74 @@ class InfobipProvider implements WhatsAppProviderInterface
             components: $data['structure']['body'] ?? $data['components'] ?? [],
             rejectionReason: $data['rejectionReason'] ?? null
         );
+    }
+
+    /**
+     * Check if a phone number has WhatsApp
+     *
+     * @param string $phoneNumber Phone number in E.164 format
+     * @return \WhatsApp\Adapter\Services\WhatsAppNumberValidationResult
+     */
+    public function checkWhatsAppNumber(string $phoneNumber): \WhatsApp\Adapter\Services\WhatsAppNumberValidationResult
+    {
+        $this->logger->debug('Checking WhatsApp number with Infobip', [
+            'phone_number' => substr($phoneNumber, 0, 4) . '***' . substr($phoneNumber, -2)
+        ]);
+
+        try {
+            // Infobip endpoint to check if number has WhatsApp
+            $response = $this->sendRequest(
+                'GET',
+                "/whatsapp/" . self::API_VERSION . "/contacts/{$phoneNumber}"
+            );
+
+            if (!$response->success) {
+                // If contact not found, number doesn't have WhatsApp
+                if (isset($response->details['requestError']['serviceException']['messageId']) &&
+                    $response->details['requestError']['serviceException']['messageId'] === 'NOT_FOUND') {
+                    
+                    return new \WhatsApp\Adapter\Services\WhatsAppNumberValidationResult(
+                        phoneNumber: $phoneNumber,
+                        hasWhatsApp: false,
+                        provider: $this->getName(),
+                        metadata: ['reason' => 'Contact not found in WhatsApp']
+                    );
+                }
+
+                // Other errors
+                return new \WhatsApp\Adapter\Services\WhatsAppNumberValidationResult(
+                    phoneNumber: $phoneNumber,
+                    hasWhatsApp: null,
+                    error: $response->error,
+                    provider: $this->getName()
+                );
+            }
+
+            // Number has WhatsApp
+            $details = $response->details;
+            $accountType = $details['type'] ?? 'consumer'; // consumer or business
+
+            return new \WhatsApp\Adapter\Services\WhatsAppNumberValidationResult(
+                phoneNumber: $phoneNumber,
+                hasWhatsApp: true,
+                accountType: $accountType,
+                provider: $this->getName(),
+                metadata: $details
+            );
+
+        } catch (\Exception $e) {
+            $this->logger->error('Failed to check WhatsApp number', [
+                'error' => $e->getMessage(),
+                'phone_number' => substr($phoneNumber, 0, 4) . '***' . substr($phoneNumber, -2)
+            ]);
+
+            return new \WhatsApp\Adapter\Services\WhatsAppNumberValidationResult(
+                phoneNumber: $phoneNumber,
+                hasWhatsApp: null,
+                error: $e->getMessage(),
+                provider: $this->getName()
+            );
+        }
     }
 
     /**

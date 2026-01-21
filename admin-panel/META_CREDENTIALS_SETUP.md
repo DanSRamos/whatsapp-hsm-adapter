@@ -1,0 +1,1 @@
+../docs/META_CREDENTIALS_SETUP.md

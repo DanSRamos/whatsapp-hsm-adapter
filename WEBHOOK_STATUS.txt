@@ -1,0 +1,143 @@
+🔍 STATUS DO WEBHOOK META - 20 Janeiro 2026, 12:55 GMT
+
+═══════════════════════════════════════════════════════════════
+
+✅ O QUE ESTÁ A FUNCIONAR:
+
+1. ✅ Webhook verificado pelo Meta (11:38:16 GMT)
+2. ✅ ngrok a correr e acessível
+3. ✅ PHP server na porta 8081
+4. ✅ Endpoint /webhooks/meta responde corretamente
+5. ✅ Teste local funciona (200 OK)
+6. ✅ Código do webhook corrigido (body vazio resolvido)
+
+═══════════════════════════════════════════════════════════════
+
+⚠️ PROBLEMA PRINCIPAL:
+
+O Meta NÃO está a enviar mensagens para o webhook!
+
+Análise do ngrok (http://127.0.0.1:4040):
+- ✅ 1 requisição GET do Meta (verificação) - 11:38:16
+- ❌ 0 requisições POST do Meta (mensagens)
+- ✅ 3 requisições GET de testes locais
+
+Conclusão: O webhook está configurado e a funcionar, mas o Meta
+não está a enviar as mensagens que tu enviaste.
+
+═══════════════════════════════════════════════════════════════
+
+🔍 POSSÍVEIS CAUSAS:
+
+1. ❓ Eventos não subscritos no Meta Dashboard
+   → Precisas clicar em "Confirm" depois de selecionar os eventos
+
+2. ❓ Page não conectada ao App
+   → A Page "CoreMedia Portugal" pode não estar ligada ao App
+
+3. ❓ App em modo Development
+   → Só recebe mensagens de admins/testers do app
+
+4. ❓ Mensagens enviadas da conta errada
+   → Precisas enviar de uma conta que seja admin/tester
+
+5. ❓ Delay do Meta
+   → Às vezes o Meta demora a enviar webhooks
+
+═══════════════════════════════════════════════════════════════
+
+🎯 PRÓXIMOS PASSOS (URGENTE):
+
+1. VERIFICAR SUBSCRIPTIONS NO META DASHBOARD:
+   
+   a) Vai para: https://developers.facebook.com/apps/650370691458548
+   b) Messenger → Settings → Webhooks
+   c) Encontra "CoreMedia Portugal"
+   d) Clica em "Edit Subscriptions"
+   e) Verifica se os eventos estão marcados:
+      ☑️ messages
+      ☑️ messaging_postbacks
+      ☑️ message_deliveries
+      ☑️ message_reads
+      ☑️ messaging_optins
+   f) **CLICA EM "CONFIRM"** (botão azul no canto inferior direito)
+   
+   ⚠️ IMPORTANTE: Se não clicares em "Confirm", os eventos NÃO são guardados!
+
+2. VERIFICAR SE A PAGE ESTÁ CONECTADA:
+   
+   a) No Meta Dashboard: Messenger → Settings
+   b) Procura "Access Tokens"
+   c) Verifica se "CoreMedia Portugal" está na lista
+   d) Se não estiver:
+      - Clica em "Add or Remove Pages"
+      - Seleciona "CoreMedia Portugal"
+      - Concede as permissões
+      - Clica em "Next" e "Done"
+
+3. VERIFICAR O APP MODE:
+   
+   a) Settings → Basic
+   b) Vê o "App Mode" no topo
+   c) Se estiver "Development":
+      - Só recebe mensagens de admins/testers
+      - Verifica se a tua conta é admin/tester
+      - OU muda para "Live" mode (requer App Review)
+
+4. TESTAR NOVAMENTE:
+   
+   a) Envia uma mensagem para a Page via Messenger
+   b) Aguarda 10-15 segundos
+   c) Verifica o ngrok: http://127.0.0.1:4040
+   d) Deve aparecer uma requisição POST
+
+═══════════════════════════════════════════════════════════════
+
+📊 INFORMAÇÃO TÉCNICA:
+
+Webhook URL: https://dramaturgic-rushingly-raphael.ngrok-free.dev/webhooks/meta
+Verify Token: d0f9a5d7806bc7b8cef7e8cfdca0c43a4bfd2d172938b3cf94d8c53bc02b20e5
+Page ID: 118491818174527
+App ID: 650370691458548
+
+Teste local funciona:
+$ php test_meta_webhook_post.php
+✅ HTTP Status: 200
+
+═══════════════════════════════════════════════════════════════
+
+🔍 COMANDOS PARA DEBUG:
+
+# Ver requisições no ngrok:
+http://127.0.0.1:4040
+
+# Ver requisições POST (mensagens):
+curl -s http://127.0.0.1:4040/api/requests/http | jq '.requests[] | select(.request.method == "POST")'
+
+# Testar webhook localmente:
+php test_meta_webhook_post.php
+
+═══════════════════════════════════════════════════════════════
+
+💡 DICA MAIS IMPORTANTE:
+
+O problema mais comum é NÃO CLICAR EM "CONFIRM" depois de selecionar
+os eventos no Meta Dashboard!
+
+Vai lá agora e confirma que clicaste no botão azul "Confirm"!
+
+═══════════════════════════════════════════════════════════════
+
+📸 O QUE DEVES VER NO META DASHBOARD:
+
+Depois de subscrever corretamente, deves ver algo assim:
+
+CoreMedia Portugal
+  Callback URL: https://dramaturgic-rushingly-raphael.ngrok-free.dev/webhooks/meta
+  Verify Token: ••••••••
+  Subscribed Fields: messages, messaging_postbacks, message_deliveries, message_reads, messaging_optins
+  Status: ✅ Active
+
+Se não vires "Subscribed Fields", os eventos NÃO estão subscritos!
+
+═══════════════════════════════════════════════════════════════

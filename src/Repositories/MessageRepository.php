@@ -117,6 +117,55 @@ class MessageRepository implements MessageRepositoryInterface
         ]);
     }
 
+    /**
+     * Update message status with delivery timestamps
+     * 
+     * Updates the message status and sets appropriate timestamp fields
+     * based on the delivery report status (delivered or read).
+     * 
+     * @param string $messageId The message ID to update
+     * @param string $status The new status (delivered, read, etc.)
+     * @param \DateTimeImmutable $timestamp The timestamp from the delivery report
+     * @param array $metadata Additional metadata to store
+     * @return void
+     */
+    public function updateDeliveryStatus(
+        string $messageId,
+        string $status,
+        \DateTimeImmutable $timestamp,
+        array $metadata
+    ): void {
+        // Determine which timestamp field to update based on status
+        $updateFields = ['status = :status', 'metadata = :metadata', 'updated_at = CURRENT_TIMESTAMP'];
+        $params = [
+            'id' => $messageId,
+            'status' => $status,
+            'metadata' => json_encode($metadata)
+        ];
+
+        // Add appropriate timestamp field based on status
+        if ($status === 'delivered') {
+            $updateFields[] = 'delivered_at = :delivered_at';
+            $params['delivered_at'] = $timestamp->format('Y-m-d H:i:s');
+        } elseif ($status === 'read') {
+            // When message is read, it's also delivered (if not already)
+            $updateFields[] = 'read_at = :read_at';
+            $params['read_at'] = $timestamp->format('Y-m-d H:i:s');
+            
+            // Also set delivered_at if it's not already set
+            $updateFields[] = 'delivered_at = COALESCE(delivered_at, :delivered_at)';
+            $params['delivered_at'] = $timestamp->format('Y-m-d H:i:s');
+        }
+
+        $sql = sprintf(
+            'UPDATE messages SET %s WHERE id = :id',
+            implode(', ', $updateFields)
+        );
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+    }
+
     public function saveIncomingMessage(\WhatsApp\Adapter\Models\IncomingMessage $message): void
     {
         $sql = <<<SQL
@@ -140,5 +189,44 @@ class MessageRepository implements MessageRepositoryInterface
             'received_at' => $message->receivedAt->format('Y-m-d H:i:s'),
             'processed' => false,
         ]);
+    }
+
+    /**
+     * Find the last incoming message from a specific sender
+     * 
+     * This is used to validate the 24-hour messaging window for Meta provider.
+     * 
+     * @param string $fromNumber The sender's number/ID (phone number, IGSID, or PSID)
+     * @return \WhatsApp\Adapter\Models\IncomingMessage|null The last incoming message or null if none found
+     */
+    public function findLastIncomingMessage(string $fromNumber): ?\WhatsApp\Adapter\Models\IncomingMessage
+    {
+        $sql = <<<SQL
+            SELECT id, from_number, to_number, type, content,
+                   context_message_id, received_at
+            FROM incoming_messages
+            WHERE from_number = :from_number
+            ORDER BY received_at DESC
+            LIMIT 1
+        SQL;
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute(['from_number' => $fromNumber]);
+        
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$row) {
+            return null;
+        }
+
+        return new \WhatsApp\Adapter\Models\IncomingMessage(
+            messageId: $row['id'],
+            from: $row['from_number'],
+            to: $row['to_number'],
+            type: $row['type'],
+            content: json_decode($row['content'], true),
+            receivedAt: new \DateTimeImmutable($row['received_at']),
+            contextMessageId: $row['context_message_id']
+        );
     }
 }

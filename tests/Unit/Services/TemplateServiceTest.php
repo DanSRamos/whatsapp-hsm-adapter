@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 use WhatsApp\Adapter\Services\TemplateService;
 use WhatsApp\Adapter\Services\CacheInterface;
-use WhatsApp\Adapter\Providers\WhatsAppProviderInterface;
-use WhatsApp\Adapter\Providers\WhatsAppProviderFactory;
+use WhatsApp\Adapter\Providers\MessagingProviderInterface;
+use WhatsApp\Adapter\Providers\MessagingProviderFactory;
 use WhatsApp\Adapter\Providers\Models\ProviderTemplate;
 use WhatsApp\Adapter\Repositories\TemplateRepositoryInterface;
 use WhatsApp\Adapter\Models\Template;
 use Psr\Log\NullLogger;
 
 beforeEach(function () {
-    $this->provider = Mockery::mock(WhatsAppProviderInterface::class);
-    $this->providerFactory = Mockery::mock(WhatsAppProviderFactory::class);
+    $this->provider = Mockery::mock(MessagingProviderInterface::class);
+    $this->providerFactory = Mockery::mock(MessagingProviderFactory::class);
     $this->repository = Mockery::mock(TemplateRepositoryInterface::class);
     $this->cache = Mockery::mock(CacheInterface::class);
     $this->logger = new NullLogger();

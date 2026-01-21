@@ -18,12 +18,12 @@ use WhatsApp\Adapter\Models\IncomingMessage;
 use WhatsApp\Adapter\Providers\Models\TemplateUpdate;
 
 /**
- * Interface for WhatsApp provider implementations (Infobip, Twilio, etc.)
+ * Interface for messaging provider implementations (WhatsApp, Instagram, Messenger, etc.)
  * 
- * This interface defines the contract that all WhatsApp providers must implement
+ * This interface defines the contract that all messaging providers must implement
  * to support sending messages, querying status, managing templates, and processing webhooks.
  */
-interface WhatsAppProviderInterface
+interface MessagingProviderInterface
 {
     /**
      * Send a template/HSM message
@@ -123,7 +123,7 @@ interface WhatsAppProviderInterface
     /**
      * Get the provider name
      *
-     * @return string The provider name (e.g., 'infobip', 'twilio')
+     * @return string The provider name (e.g., 'infobip', 'twilio', 'meta')
      */
     public function getName(): string;
 }

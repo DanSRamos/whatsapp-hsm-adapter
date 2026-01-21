@@ -13,7 +13,7 @@ use Monolog\Logger;
 use Monolog\Handler\NullHandler;
 use WhatsApp\Adapter\Models\Requests\HSMRequest;
 use WhatsApp\Adapter\Models\Requests\TextRequest;
-use WhatsApp\Adapter\Providers\WhatsAppProviderFactory;
+use WhatsApp\Adapter\Providers\MessagingProviderFactory;
 use WhatsApp\Adapter\Repositories\MessageRepository;
 use WhatsApp\Adapter\Services\MessageService;
 use WhatsApp\Adapter\Services\RetryHandler;
@@ -110,7 +110,7 @@ describe('MessageService Properties', function () {
         $handlerStack = HandlerStack::create($mock);
         $client = new Client(['handler' => $handlerStack]);
 
-        $providerFactory = new WhatsAppProviderFactory($this->config, $client, $this->logger);
+        $providerFactory = new MessagingProviderFactory($this->config, $client, $this->logger);
         $retryHandler = new RetryHandler($this->logger, 1); // Only 1 retry for faster tests
         
         $service = new MessageService(
@@ -178,7 +178,7 @@ describe('MessageService Properties', function () {
         $handlerStack = HandlerStack::create($mock);
         $client = new Client(['handler' => $handlerStack]);
 
-        $providerFactory = new WhatsAppProviderFactory($this->config, $client, $this->logger);
+        $providerFactory = new MessagingProviderFactory($this->config, $client, $this->logger);
         $retryHandler = new RetryHandler($this->logger);
         
         $service = new MessageService(
@@ -236,7 +236,7 @@ describe('MessageService Properties', function () {
         $handlerStack = HandlerStack::create($mock);
         $client = new Client(['handler' => $handlerStack]);
 
-        $providerFactory = new WhatsAppProviderFactory($this->config, $client, $this->logger);
+        $providerFactory = new MessagingProviderFactory($this->config, $client, $this->logger);
         $retryHandler = new RetryHandler($this->logger, 1);
         
         $service = new MessageService(
@@ -293,7 +293,7 @@ describe('MessageService Properties', function () {
         $handlerStack = HandlerStack::create($mock);
         $client = new Client(['handler' => $handlerStack]);
 
-        $providerFactory = new WhatsAppProviderFactory($this->config, $client, $this->logger);
+        $providerFactory = new MessagingProviderFactory($this->config, $client, $this->logger);
         $retryHandler = new RetryHandler($this->logger);
         
         $service = new MessageService(

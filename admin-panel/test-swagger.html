@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Swagger UI Test</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/swagger-ui-dist@5.10.5/swagger-ui.css"
+    />
+  </head>
+  <body>
+    <h1>Testing Swagger UI</h1>
+    <div id="swagger-ui"></div>
+
+    <script src="https://unpkg.com/swagger-ui-dist@5.10.5/swagger-ui-bundle.js"></script>
+    <script src="https://unpkg.com/swagger-ui-dist@5.10.5/swagger-ui-standalone-preset.js"></script>
+    <script>
+      window.onload = function () {
+        console.log("Starting Swagger UI test...");
+        console.log("Current URL:", window.location.href);
+        console.log("Current pathname:", window.location.pathname);
+
+        // Test with absolute path
+        const openapiUrl = "/docs/openapi.yaml";
+        console.log("Loading OpenAPI from:", openapiUrl);
+
+        const ui = SwaggerUIBundle({
+          url: openapiUrl,
+          dom_id: "#swagger-ui",
+          presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
+          onComplete: function () {
+            console.log("✅ SUCCESS: Swagger UI loaded!");
+          },
+          onFailure: function (error) {
+            console.error("❌ FAILED:", error);
+          },
+        });
+      };
+    </script>
+  </body>
+</html>

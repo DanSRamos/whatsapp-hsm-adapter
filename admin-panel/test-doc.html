@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Test Doc Viewer</title>
+  </head>
+  <body>
+    <h1>Test Document Viewer</h1>
+    <div id="status">Testing...</div>
+    <div
+      id="content"
+      style="border: 1px solid #ccc; padding: 20px; margin-top: 20px"
+    ></div>
+
+    <script>
+      async function test() {
+        const status = document.getElementById("status");
+        const content = document.getElementById("content");
+
+        try {
+          status.textContent = "Step 1: Fetching document...";
+          const response = await fetch("../docs/INSTAGRAM_SETUP.md");
+
+          status.textContent =
+            "Step 2: Response received, status: " + response.status;
+
+          if (!response.ok) {
+            throw new Error("HTTP " + response.status);
+          }
+
+          const text = await response.text();
+          status.textContent =
+            "Step 3: Document loaded! Length: " + text.length + " characters";
+
+          // Show first 500 characters
+          content.innerHTML = "<pre>" + text.substring(0, 500) + "...</pre>";
+        } catch (error) {
+          status.textContent = "ERROR: " + error.message;
+          status.style.color = "red";
+        }
+      }
+
+      test();
+    </script>
+  </body>
+</html>

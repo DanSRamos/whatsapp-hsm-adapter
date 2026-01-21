@@ -151,7 +151,7 @@ class TemplateSynchronizationTest extends \PHPUnit\Framework\TestCase
             ]
         ];
 
-        $providerFactory = new \App\Providers\WhatsAppProviderFactory(
+        $providerFactory = new \App\Providers\MessagingProviderFactory(
             $config,
             $httpClient,
             new NullLogger()
@@ -265,7 +265,7 @@ class TemplateSynchronizationTest extends \PHPUnit\Framework\TestCase
         ];
 
         $httpClient = new Client();
-        $providerFactory = new \App\Providers\WhatsAppProviderFactory(
+        $providerFactory = new \App\Providers\MessagingProviderFactory(
             $config,
             $httpClient,
             new NullLogger()
@@ -392,7 +392,7 @@ class TemplateSynchronizationTest extends \PHPUnit\Framework\TestCase
             ]
         ];
 
-        $providerFactory = new \App\Providers\WhatsAppProviderFactory(
+        $providerFactory = new \App\Providers\MessagingProviderFactory(
             $config,
             $httpClient,
             new NullLogger()
@@ -485,7 +485,7 @@ class TemplateSynchronizationTest extends \PHPUnit\Framework\TestCase
         ];
 
         $httpClient = new Client();
-        $providerFactory = new \App\Providers\WhatsAppProviderFactory(
+        $providerFactory = new \App\Providers\MessagingProviderFactory(
             $config,
             $httpClient,
             new NullLogger()

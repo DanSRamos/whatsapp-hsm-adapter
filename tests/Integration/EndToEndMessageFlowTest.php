@@ -129,7 +129,7 @@ class EndToEndMessageFlowTest extends \PHPUnit\Framework\TestCase
             ]
         ];
 
-        $providerFactory = new \App\Providers\WhatsAppProviderFactory(
+        $providerFactory = new \App\Providers\MessagingProviderFactory(
             $config,
             $httpClient,
             new NullLogger()
@@ -214,7 +214,7 @@ class EndToEndMessageFlowTest extends \PHPUnit\Framework\TestCase
         ];
 
         $httpClient = new Client();
-        $providerFactory = new \App\Providers\WhatsAppProviderFactory(
+        $providerFactory = new \App\Providers\MessagingProviderFactory(
             $config,
             $httpClient,
             new NullLogger()
@@ -327,7 +327,7 @@ class EndToEndMessageFlowTest extends \PHPUnit\Framework\TestCase
         ];
 
         $httpClient = new Client();
-        $providerFactory = new \App\Providers\WhatsAppProviderFactory(
+        $providerFactory = new \App\Providers\MessagingProviderFactory(
             $config,
             $httpClient,
             new NullLogger()
@@ -417,7 +417,7 @@ class EndToEndMessageFlowTest extends \PHPUnit\Framework\TestCase
             ]
         ];
 
-        $providerFactory = new \App\Providers\WhatsAppProviderFactory(
+        $providerFactory = new \App\Providers\MessagingProviderFactory(
             $config,
             $httpClient,
             new NullLogger()
@@ -452,7 +452,7 @@ class EndToEndMessageFlowTest extends \PHPUnit\Framework\TestCase
         $handlerStack = HandlerStack::create($mockHandler);
         $httpClient = new Client(['handler' => $handlerStack]);
 
-        $providerFactory = new \App\Providers\WhatsAppProviderFactory(
+        $providerFactory = new \App\Providers\MessagingProviderFactory(
             $config,
             $httpClient,
             new NullLogger()
@@ -519,7 +519,7 @@ class EndToEndMessageFlowTest extends \PHPUnit\Framework\TestCase
             ]
         ];
 
-        $providerFactory = new \App\Providers\WhatsAppProviderFactory(
+        $providerFactory = new \App\Providers\MessagingProviderFactory(
             $config,
             $httpClient,
             new NullLogger()
@@ -597,7 +597,7 @@ class EndToEndMessageFlowTest extends \PHPUnit\Framework\TestCase
             ]
         ];
 
-        $providerFactory = new \App\Providers\WhatsAppProviderFactory(
+        $providerFactory = new \App\Providers\MessagingProviderFactory(
             $config,
             $httpClient,
             new NullLogger()

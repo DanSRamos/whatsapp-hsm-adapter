@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Meta Metrics Dashboard - WhatsApp HSM Adapter</title>
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      .dashboard-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      .dashboard-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .dashboard-header h1 {
+        margin: 0 0 10px 0;
+        font-size: 2em;
+      }
+
+      .dashboard-header p {
+        margin: 0;
+        opacity: 0.9;
+      }
+
+      .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+      }
+
+      .metric-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
+
+      .metric-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      }
+
+      .metric-card h3 {
+        margin: 0 0 15px 0;
+        color: #333;
+        font-size: 1.1em;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .metric-icon {
+        font-size: 1.5em;
+      }
+
+      .metric-value {
+        font-size: 2.5em;
+        font-weight: bold;
+        color: #667eea;
+        margin: 10px 0;
+      }
+
+      .metric-label {
+        color: #666;
+        font-size: 0.9em;
+      }
+
+      .metric-trend {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        margin-top: 10px;
+        font-size: 0.9em;
+      }
+
+      .trend-up {
+        color: #10b981;
+      }
+
+      .trend-down {
+        color: #ef4444;
+      }
+
+      .chart-container {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+      }
+
+      .chart-container h3 {
+        margin: 0 0 20px 0;
+        color: #333;
+      }
+
+      .chart-placeholder {
+        height: 300px;
+        background: #f3f4f6;
+        border-radius: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #9ca3af;
+      }
+
+      .platform-tabs {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+
+      .platform-tab {
+        padding: 10px 20px;
+        border: none;
+        background: #f3f4f6;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-weight: 500;
+      }
+
+      .platform-tab.active {
+        background: #667eea;
+        color: white;
+      }
+
+      .platform-tab:hover:not(.active) {
+        background: #e5e7eb;
+      }
+
+      .period-selector {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+
+      .period-btn {
+        padding: 8px 16px;
+        border: 1px solid #d1d5db;
+        background: white;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .period-btn.active {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+      }
+
+      .period-btn:hover:not(.active) {
+        border-color: #667eea;
+        color: #667eea;
+      }
+
+      .status-indicator {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        margin-right: 8px;
+      }
+
+      .status-healthy {
+        background: #10b981;
+      }
+
+      .status-degraded {
+        background: #f59e0b;
+      }
+
+      .status-unhealthy {
+        background: #ef4444;
+      }
+
+      .error-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .error-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px;
+        border-bottom: 1px solid #e5e7eb;
+      }
+
+      .error-item:last-child {
+        border-bottom: none;
+      }
+
+      .error-code {
+        font-weight: 600;
+        color: #ef4444;
+      }
+
+      .error-count {
+        background: #fee2e2;
+        color: #991b1b;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.85em;
+        font-weight: 600;
+      }
+
+      .loading {
+        text-align: center;
+        padding: 40px;
+        color: #9ca3af;
+      }
+
+      .refresh-btn {
+        background: #667eea;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: background 0.2s;
+      }
+
+      .refresh-btn:hover {
+        background: #5568d3;
+      }
+
+      .last-updated {
+        color: #6b7280;
+        font-size: 0.9em;
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <script src="header.js"></script>
+
+    <div class="dashboard-container">
+      <div class="dashboard-header">
+        <h1>📊 Meta Metrics Dashboard</h1>
+        <p>Monitoramento em tempo real do Instagram e Facebook Messenger</p>
+      </div>
+
+      <div class="period-selector">
+        <button class="period-btn active" data-period="hour">
+          Última Hora
+        </button>
+        <button class="period-btn" data-period="day">Último Dia</button>
+        <button class="period-btn" data-period="week">Última Semana</button>
+        <button class="refresh-btn" onclick="refreshDashboard()">
+          🔄 Atualizar
+        </button>
+      </div>
+
+      <div class="platform-tabs">
+        <button class="platform-tab active" data-platform="all">
+          Todas as Plataformas
+        </button>
+        <button class="platform-tab" data-platform="instagram">
+          Instagram
+        </button>
+        <button class="platform-tab" data-platform="messenger">
+          Messenger
+        </button>
+      </div>
+
+      <div id="loading" class="loading">
+        <p>Carregando métricas...</p>
+      </div>
+
+      <div id="dashboard-content" style="display: none">
+        <!-- KPIs principais -->
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <h3><span class="metric-icon">✅</span> Taxa de Sucesso</h3>
+            <div class="metric-value" id="success-rate">--</div>
+            <div class="metric-label">Mensagens enviadas com sucesso</div>
+            <div class="metric-trend" id="success-trend"></div>
+          </div>
+
+          <div class="metric-card">
+            <h3><span class="metric-icon">⚡</span> Tempo de Resposta</h3>
+            <div class="metric-value" id="response-time">--</div>
+            <div class="metric-label">Tempo médio da API</div>
+            <div class="metric-trend" id="response-trend"></div>
+          </div>
+
+          <div class="metric-card">
+            <h3><span class="metric-icon">📨</span> Mensagens Enviadas</h3>
+            <div class="metric-value" id="messages-sent">--</div>
+            <div class="metric-label">Total de mensagens</div>
+            <div class="metric-trend" id="messages-trend"></div>
+          </div>
+
+          <div class="metric-card">
+            <h3><span class="metric-icon">🔔</span> Webhooks Recebidos</h3>
+            <div class="metric-value" id="webhooks-received">--</div>
+            <div class="metric-label">Total de webhooks</div>
+            <div class="metric-trend" id="webhooks-trend"></div>
+          </div>
+
+          <div class="metric-card">
+            <h3><span class="metric-icon">⏰</span> Erros de Janela 24h</h3>
+            <div class="metric-value" id="window-errors">--</div>
+            <div class="metric-label">Mensagens fora da janela</div>
+            <div class="metric-trend" id="window-trend"></div>
+          </div>
+
+          <div class="metric-card">
+            <h3><span class="metric-icon">🔧</span> Status do Sistema</h3>
+            <div class="metric-value" id="system-status">
+              <span class="status-indicator status-healthy"></span>
+              <span style="font-size: 0.6em">Saudável</span>
+            </div>
+            <div class="metric-label">Circuit Breaker e Alertas</div>
+          </div>
+        </div>
+
+        <!-- Gráficos -->
+        <div class="chart-container">
+          <h3>📈 Taxa de Sucesso por Plataforma</h3>
+          <div class="chart-placeholder" id="success-chart">
+            Gráfico de taxa de sucesso será exibido aqui
+          </div>
+        </div>
+
+        <div class="chart-container">
+          <h3>⚡ Tempo de Resposta (Percentis)</h3>
+          <div class="chart-placeholder" id="response-chart">
+            Gráfico de tempo de resposta será exibido aqui
+          </div>
+        </div>
+
+        <div class="chart-container">
+          <h3>❌ Top 10 Erros</h3>
+          <ul class="error-list" id="error-list">
+            <li class="error-item">
+              <span>Carregando erros...</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="chart-container">
+          <h3>🔔 Webhooks por Tipo</h3>
+          <div class="chart-placeholder" id="webhook-chart">
+            Gráfico de webhooks será exibido aqui
+          </div>
+        </div>
+
+        <div class="last-updated" id="last-updated">Última atualização: --</div>
+      </div>
+    </div>
+
+    <script>
+      let currentPeriod = "hour";
+      let currentPlatform = "all";
+
+      // Event listeners para tabs e botões
+      document.querySelectorAll(".period-btn").forEach((btn) => {
+        btn.addEventListener("click", function () {
+          document
+            .querySelectorAll(".period-btn")
+            .forEach((b) => b.classList.remove("active"));
+          this.classList.add("active");
+          currentPeriod = this.dataset.period;
+          loadMetrics();
+        });
+      });
+
+      document.querySelectorAll(".platform-tab").forEach((tab) => {
+        tab.addEventListener("click", function () {
+          document
+            .querySelectorAll(".platform-tab")
+            .forEach((t) => t.classList.remove("active"));
+          this.classList.add("active");
+          currentPlatform = this.dataset.platform;
+          loadMetrics();
+        });
+      });
+
+      async function loadMetrics() {
+        try {
+          document.getElementById("loading").style.display = "block";
+          document.getElementById("dashboard-content").style.display = "none";
+
+          // Carregar resumo de métricas
+          const platform = currentPlatform === "all" ? null : currentPlatform;
+          const response = await fetch(
+            `/metrics/meta.php?period=${currentPeriod}`
+          );
+          const data = await response.json();
+
+          if (data.success) {
+            updateDashboard(data.data);
+            document.getElementById("loading").style.display = "none";
+            document.getElementById("dashboard-content").style.display =
+              "block";
+          } else {
+            console.error("Failed to load metrics:", data.error);
+            alert("Erro ao carregar métricas: " + data.error);
+          }
+        } catch (error) {
+          console.error("Error loading metrics:", error);
+          alert("Erro ao carregar métricas: " + error.message);
+        }
+      }
+
+      function updateDashboard(data) {
+        // Selecionar dados da plataforma atual
+        const platformData =
+          currentPlatform === "all"
+            ? data.success_rate.all
+            : data.success_rate[currentPlatform];
+
+        // Atualizar KPIs
+        document.getElementById("success-rate").textContent =
+          platformData.success_rate.toFixed(1) + "%";
+
+        // Tempo de resposta
+        const responseTime =
+          currentPlatform === "all"
+            ? Object.values(data.response_time).reduce(
+                (sum, rt) => sum + rt.average_ms,
+                0
+              ) / 2
+            : data.response_time[currentPlatform].average_ms;
+
+        document.getElementById("response-time").textContent =
+          responseTime.toFixed(0) + "ms";
+
+        // Mensagens enviadas
+        document.getElementById("messages-sent").textContent =
+          platformData.total.toLocaleString();
+
+        // Webhooks
+        const webhookData =
+          currentPlatform === "all"
+            ? data.webhooks.all
+            : data.webhooks[currentPlatform];
+
+        document.getElementById("webhooks-received").textContent =
+          webhookData.total.toLocaleString();
+
+        // Erros de janela
+        const windowErrors =
+          currentPlatform === "all"
+            ? data.messaging_window_errors.all
+            : data.messaging_window_errors[currentPlatform];
+
+        document.getElementById("window-errors").textContent =
+          windowErrors.count.toLocaleString();
+
+        // Atualizar lista de erros
+        updateErrorList(data.top_errors.errors);
+
+        // Atualizar timestamp
+        document.getElementById("last-updated").textContent =
+          "Última atualização: " + data.timestamp;
+      }
+
+      function updateErrorList(errors) {
+        const errorList = document.getElementById("error-list");
+        errorList.innerHTML = "";
+
+        if (Object.keys(errors).length === 0) {
+          errorList.innerHTML =
+            '<li class="error-item"><span>Nenhum erro registrado</span></li>';
+          return;
+        }
+
+        for (const [code, count] of Object.entries(errors)) {
+          const li = document.createElement("li");
+          li.className = "error-item";
+          li.innerHTML = `
+                    <span class="error-code">Erro ${code}</span>
+                    <span class="error-count">${count}</span>
+                `;
+          errorList.appendChild(li);
+        }
+      }
+
+      function refreshDashboard() {
+        loadMetrics();
+      }
+
+      // Auto-refresh a cada 30 segundos
+      setInterval(refreshDashboard, 30000);
+
+      // Carregar métricas ao iniciar
+      loadMetrics();
+    </script>
+  </body>
+</html>

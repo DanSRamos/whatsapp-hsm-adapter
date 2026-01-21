@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="pt">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>API Documentation - Multi-Platform Messaging Adapter</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/swagger-ui-dist@5.10.5/swagger-ui.css"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, sans-serif;
+      }
+
+      .header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem 2rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .header h1 {
+        margin: 0;
+        font-size: 1.75rem;
+        font-weight: 600;
+      }
+
+      .header p {
+        margin: 0.5rem 0 0 0;
+        opacity: 0.9;
+        font-size: 0.95rem;
+      }
+
+      .nav-tabs {
+        background: white;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 0 2rem;
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      .nav-tab {
+        padding: 1rem 1.5rem;
+        background: none;
+        border: none;
+        border-bottom: 3px solid transparent;
+        color: #64748b;
+        font-size: 0.95rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .nav-tab:hover {
+        color: #667eea;
+        background: #f8fafc;
+      }
+
+      .nav-tab.active {
+        color: #667eea;
+        border-bottom-color: #667eea;
+      }
+
+      .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: white;
+        text-decoration: none;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+        opacity: 0.9;
+        transition: opacity 0.2s;
+      }
+
+      .back-link:hover {
+        opacity: 1;
+      }
+
+      .content-wrapper {
+        display: none;
+      }
+
+      .content-wrapper.active {
+        display: block;
+      }
+
+      #swagger-ui {
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+
+      .swagger-ui .topbar {
+        display: none;
+      }
+
+      .info-panel {
+        max-width: 1400px;
+        margin: 2rem auto;
+        padding: 0 2rem;
+      }
+
+      .info-card {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1.5rem;
+      }
+
+      .info-card h2 {
+        margin: 0 0 1rem 0;
+        color: #1e293b;
+        font-size: 1.5rem;
+      }
+
+      .info-card h3 {
+        margin: 1.5rem 0 0.75rem 0;
+        color: #334155;
+        font-size: 1.1rem;
+      }
+
+      .info-card p {
+        color: #64748b;
+        line-height: 1.6;
+        margin: 0.5rem 0;
+      }
+
+      .info-card ul {
+        color: #64748b;
+        line-height: 1.8;
+        margin: 0.5rem 0;
+        padding-left: 1.5rem;
+      }
+
+      .info-card code {
+        background: #f1f5f9;
+        padding: 0.2rem 0.4rem;
+        border-radius: 4px;
+        font-size: 0.9em;
+        color: #667eea;
+      }
+
+      .info-card pre {
+        background: #1e293b;
+        color: #e2e8f0;
+        padding: 1rem;
+        border-radius: 8px;
+        overflow-x: auto;
+        font-size: 0.9rem;
+      }
+
+      .info-card pre code {
+        background: none;
+        color: inherit;
+        padding: 0;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin: 1.5rem 0;
+      }
+
+      .stat-box {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        text-align: center;
+      }
+
+      .stat-box .number {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+      }
+
+      .stat-box .label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+      }
+
+      .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+        margin: 1.5rem 0;
+      }
+
+      .feature-box {
+        background: #f8fafc;
+        padding: 1.5rem;
+        border-radius: 8px;
+        border-left: 4px solid #667eea;
+      }
+
+      .feature-box h4 {
+        margin: 0 0 0.5rem 0;
+        color: #1e293b;
+        font-size: 1rem;
+      }
+
+      .feature-box p {
+        margin: 0;
+        font-size: 0.9rem;
+        color: #64748b;
+      }
+
+      .btn {
+        display: inline-block;
+        padding: 0.75rem 1.5rem;
+        background: #667eea;
+        color: white;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.2s;
+        border: none;
+        cursor: pointer;
+        font-size: 0.95rem;
+      }
+
+      .btn:hover {
+        background: #5568d3;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+      }
+
+      .btn-secondary {
+        background: #64748b;
+      }
+
+      .btn-secondary:hover {
+        background: #475569;
+      }
+
+      .button-group {
+        display: flex;
+        gap: 1rem;
+        margin: 1.5rem 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <a href="/admin-panel/index-tabs.html" class="back-link">
+        ← Voltar ao Dashboard
+      </a>
+      <h1>📚 API Documentation</h1>
+      <p>Documentação interativa da API Multi-Platform Messaging Adapter</p>
+    </div>
+
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="showTab('swagger')">
+        Interactive API
+      </button>
+      <button class="nav-tab" onclick="showTab('info')">Informações</button>
+      <button class="nav-tab" onclick="showTab('examples')">Exemplos</button>
+    </div>
+
+    <!-- Swagger UI Tab -->
+    <div id="swagger-tab" class="content-wrapper active">
+      <div id="swagger-ui"></div>
+    </div>
+
+    <!-- Info Tab -->
+    <div id="info-tab" class="content-wrapper">
+      <div class="info-panel">
+        <div class="info-card">
+          <h2>Sobre a API</h2>
+          <p>
+            A Multi-Platform Messaging Adapter API fornece endpoints RESTful
+            para enviar e gerenciar mensagens através de múltiplas plataformas
+            de mensagens.
+          </p>
+
+          <div class="stats-grid">
+            <div class="stat-box">
+              <div class="number">27</div>
+              <div class="label">Endpoints</div>
+            </div>
+            <div class="stat-box">
+              <div class="number">3</div>
+              <div class="label">Plataformas</div>
+            </div>
+            <div class="stat-box">
+              <div class="number">20+</div>
+              <div class="label">Schemas</div>
+            </div>
+            <div class="stat-box">
+              <div class="number">100%</div>
+              <div class="label">Documentado</div>
+            </div>
+          </div>
+
+          <h3>Plataformas Suportadas</h3>
+          <ul>
+            <li><strong>WhatsApp</strong> - Via Infobip e Twilio</li>
+            <li>
+              <strong>Instagram</strong> - Via Meta Messenger Platform API
+            </li>
+            <li>
+              <strong>Facebook Messenger</strong> - Via Meta Messenger Platform
+              API
+            </li>
+          </ul>
+
+          <h3>Categorias de Endpoints</h3>
+          <div class="feature-grid">
+            <div class="feature-box">
+              <h4>Health Check</h4>
+              <p>Verificação de saúde do serviço e dependências</p>
+            </div>
+            <div class="feature-box">
+              <h4>Templates</h4>
+              <p>Gestão de templates de mensagens WhatsApp</p>
+            </div>
+            <div class="feature-box">
+              <h4>Messages</h4>
+              <p>Envio de mensagens em todas as plataformas</p>
+            </div>
+            <div class="feature-box">
+              <h4>Validation</h4>
+              <p>Validação de números WhatsApp</p>
+            </div>
+            <div class="feature-box">
+              <h4>Webhooks</h4>
+              <p>Recebimento de notificações dos provedores</p>
+            </div>
+            <div class="feature-box">
+              <h4>Metrics</h4>
+              <p>Monitoramento e métricas de performance</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <h2>Autenticação</h2>
+          <p>
+            Todas as requisições à API devem incluir uma chave de API no header
+            <code>Authorization</code>:
+          </p>
+          <pre><code>Authorization: Bearer YOUR_API_KEY</code></pre>
+
+          <h3>Rate Limiting</h3>
+          <p>A API implementa rate limiting para proteger o serviço:</p>
+          <ul>
+            <li>Padrão: 100 requisições por minuto por API key</li>
+            <li>WhatsApp (Infobip/Twilio): 100 req/min</li>
+            <li>Instagram: 200 req/hora</li>
+            <li>Facebook Messenger: 200 req/hora</li>
+          </ul>
+        </div>
+
+        <div class="info-card">
+          <h2>Recursos Adicionais</h2>
+          <div class="button-group">
+            <a href="test-swagger.html" class="btn">
+              🧪 Versão Simples (Test)
+            </a>
+            <a href="/docs/openapi.yaml" class="btn" download>
+              ⬇️ Download OpenAPI Spec
+            </a>
+            <a href="/docs/API.md" class="btn btn-secondary" target="_blank">
+              📖 Documentação Completa
+            </a>
+            <a
+              href="/docs/OPENAPI_QUICK_START.md"
+              class="btn btn-secondary"
+              target="_blank"
+            >
+              🚀 Quick Start Guide
+            </a>
+          </div>
+
+          <h3>Outras Versões</h3>
+          <p>
+            <strong>🧪 Versão Simples:</strong> Interface minimalista do Swagger
+            UI para testes rápidos e debugging. Ideal quando precisas de testar
+            endpoints rapidamente sem a interface completa.
+          </p>
+
+          <h3>Gerar Client Libraries</h3>
+          <p>Use o OpenAPI Generator para criar bibliotecas cliente:</p>
+          <pre><code># TypeScript
+openapi-generator-cli generate -i docs/openapi.yaml -g typescript-axios -o clients/typescript
+
+# PHP
+openapi-generator-cli generate -i docs/openapi.yaml -g php -o clients/php
+
+# Python
+openapi-generator-cli generate -i docs/openapi.yaml -g python -o clients/python</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Examples Tab -->
+    <div id="examples-tab" class="content-wrapper">
+      <div class="info-panel">
+        <div class="info-card">
+          <h2>Exemplos de Uso</h2>
+
+          <h3>1. Enviar Mensagem de Texto (WhatsApp)</h3>
+          <pre><code>curl -X POST https://your-domain.com/api/messages/text \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "to": "+351912345678",
+    "text": "Olá! Como posso ajudar?",
+    "provider": "infobip"
+  }'</code></pre>
+
+          <h3>2. Validar Número WhatsApp</h3>
+          <pre><code>curl -X GET "https://your-domain.com/api/whatsapp/check-number?phoneNumber=%2B351912345678" \
+  -H "Authorization: Bearer YOUR_API_KEY"</code></pre>
+
+          <h3>3. Enviar HSM Template</h3>
+          <pre><code>curl -X POST https://your-domain.com/api/messages/hsm \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "to": "+351912345678",
+    "templateId": "template_123",
+    "parameters": {
+      "name": "João",
+      "code": "12345"
+    },
+    "provider": "infobip"
+  }'</code></pre>
+
+          <h3>4. Enviar Mensagem Instagram</h3>
+          <pre><code>curl -X POST https://your-domain.com/api/messages/text \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "to": "1234567890",
+    "text": "Olá do Instagram!",
+    "provider": "meta",
+    "platform": "instagram"
+  }'</code></pre>
+
+          <h3>5. Consultar Status de Mensagem</h3>
+          <pre><code>curl -X GET https://your-domain.com/api/messages/msg_abc123/status \
+  -H "Authorization: Bearer YOUR_API_KEY"</code></pre>
+
+          <h3>6. Obter Métricas</h3>
+          <pre><code>curl -X GET "https://your-domain.com/metrics/meta?timeRange=24h" \
+  -H "Authorization: Bearer YOUR_API_KEY"</code></pre>
+        </div>
+
+        <div class="info-card">
+          <h2>Exemplos em JavaScript</h2>
+          <pre><code>// Enviar mensagem de texto
+async function sendMessage(phoneNumber, text) {
+  const response = await fetch('https://your-domain.com/api/messages/text', {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer YOUR_API_KEY',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      to: phoneNumber,
+      text: text,
+      provider: 'infobip'
+    })
+  });
+  
+  const data = await response.json();
+  console.log('Message ID:', data.data.messageId);
+  return data;
+}
+
+// Validar número WhatsApp
+async function checkWhatsApp(phoneNumber) {
+  const response = await fetch(
+    `https://your-domain.com/api/whatsapp/check-number?phoneNumber=${encodeURIComponent(phoneNumber)}`,
+    {
+      headers: {
+        'Authorization': 'Bearer YOUR_API_KEY'
+      }
+    }
+  );
+  
+  const data = await response.json();
+  return data.data.hasWhatsApp;
+}</code></pre>
+        </div>
+
+        <div class="info-card">
+          <h2>Exemplos em PHP</h2>
+          <pre><code>&lt;?php
+$client = new GuzzleHttp\Client();
+
+// Enviar mensagem de texto
+$response = $client->post('https://your-domain.com/api/messages/text', [
+    'headers' => [
+        'Authorization' => 'Bearer YOUR_API_KEY',
+        'Content-Type' => 'application/json',
+    ],
+    'json' => [
+        'to' => '+351912345678',
+        'text' => 'Olá do PHP!',
+        'provider' => 'infobip',
+    ],
+]);
+
+$data = json_decode($response->getBody(), true);
+echo "Message ID: " . $data['data']['messageId'];
+?&gt;</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/swagger-ui-dist@5.10.5/swagger-ui-bundle.js"></script>
+    <script src="https://unpkg.com/swagger-ui-dist@5.10.5/swagger-ui-standalone-preset.js"></script>
+    <script>
+      // Initialize Swagger UI
+      window.onload = function () {
+        // Use absolute path from root - most reliable approach
+        const openapiUrl = "/docs/openapi.yaml";
+
+        console.log("Current path:", window.location.pathname);
+        console.log("OpenAPI URL:", openapiUrl);
+        console.log("Full URL:", window.location.origin + openapiUrl);
+
+        const ui = SwaggerUIBundle({
+          url: openapiUrl,
+          dom_id: "#swagger-ui",
+          deepLinking: true,
+          presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
+          plugins: [SwaggerUIBundle.plugins.DownloadUrl],
+          layout: "StandaloneLayout",
+          defaultModelsExpandDepth: 1,
+          defaultModelExpandDepth: 1,
+          docExpansion: "list",
+          filter: true,
+          showRequestHeaders: true,
+          tryItOutEnabled: true,
+          onComplete: function () {
+            console.log("Swagger UI loaded successfully!");
+          },
+          onFailure: function (error) {
+            console.error("Failed to load OpenAPI spec:", error);
+            // Try alternative path
+            if (openapiUrl === "../docs/openapi.yaml") {
+              console.log("Retrying with alternative path...");
+              window.location.reload();
+            }
+          },
+        });
+
+        window.ui = ui;
+      };
+
+      // Tab switching
+      function showTab(tabName) {
+        // Hide all tabs
+        document.querySelectorAll(".content-wrapper").forEach((tab) => {
+          tab.classList.remove("active");
+        });
+
+        // Remove active class from all nav tabs
+        document.querySelectorAll(".nav-tab").forEach((tab) => {
+          tab.classList.remove("active");
+        });
+
+        // Show selected tab
+        document.getElementById(tabName + "-tab").classList.add("active");
+
+        // Add active class to clicked nav tab
+        event.target.classList.add("active");
+      }
+    </script>
+  </body>
+</html>

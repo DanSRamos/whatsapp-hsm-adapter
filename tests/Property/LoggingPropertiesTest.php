@@ -11,7 +11,7 @@ use Monolog\Handler\TestHandler;
 use WhatsApp\Adapter\Models\Requests\HSMRequest;
 use WhatsApp\Adapter\Models\Requests\TextRequest;
 use WhatsApp\Adapter\Providers\Infobip\InfobipProvider;
-use WhatsApp\Adapter\Providers\WhatsAppProviderFactory;
+use WhatsApp\Adapter\Providers\MessagingProviderFactory;
 use WhatsApp\Adapter\Repositories\MessageRepository;
 use WhatsApp\Adapter\Services\MessageService;
 use WhatsApp\Adapter\Services\RetryHandler;
@@ -66,7 +66,7 @@ test('Property 21.1: Successful operations are logged with INFO level', function
     );
     
     // Create factory with proper configuration
-    $factory = new WhatsAppProviderFactory(
+    $factory = new MessagingProviderFactory(
         [
             'default_provider' => 'infobip',
             'providers' => [
@@ -155,7 +155,7 @@ test('Property 21.2: Errors are logged with ERROR level and stack trace', functi
     );
     
     // Create factory with proper configuration
-    $factory = new WhatsAppProviderFactory(
+    $factory = new MessagingProviderFactory(
         [
             'default_provider' => 'infobip',
             'providers' => [
@@ -246,7 +246,7 @@ test('Property 21.3: Sensitive data is not logged', function () {
     );
     
     // Create factory with proper configuration
-    $factory = new WhatsAppProviderFactory(
+    $factory = new MessagingProviderFactory(
         [
             'default_provider' => 'infobip',
             'providers' => [
@@ -324,7 +324,7 @@ test('Property 21.4: All requests include timestamps', function () {
     );
     
     // Create factory with proper configuration
-    $factory = new WhatsAppProviderFactory(
+    $factory = new MessagingProviderFactory(
         [
             'default_provider' => 'infobip',
             'providers' => [
@@ -409,7 +409,7 @@ test('Property 21.5: Template operations are logged with sufficient context', fu
     );
     
     // Create factory with proper configuration
-    $factory = new WhatsAppProviderFactory(
+    $factory = new MessagingProviderFactory(
         [
             'default_provider' => 'infobip',
             'providers' => [

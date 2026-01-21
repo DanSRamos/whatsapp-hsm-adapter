@@ -6,7 +6,30 @@
     "messageId": "test-msg-001",
     "timestamp": "2026-01-16T19:05:23Z",
     "type": "incoming",
-    "messageType": "text"
+    "messageType": "text",
+    "provider": "whatsapp"
+  },
+  {
+    "from": "1234567890",
+    "igsid": "1234567890",
+    "to": "meta-page-id",
+    "text": "Olá! Gostaria de saber mais sobre seus produtos",
+    "messageId": "test-msg-ig-001",
+    "timestamp": "2026-01-16T19:04:30Z",
+    "type": "incoming",
+    "messageType": "text",
+    "provider": "instagram"
+  },
+  {
+    "from": "9876543210",
+    "psid": "9876543210",
+    "to": "meta-page-id",
+    "text": "Oi! Preciso de ajuda com meu pedido",
+    "messageId": "test-msg-fb-001",
+    "timestamp": "2026-01-16T19:04:00Z",
+    "type": "incoming",
+    "messageType": "text",
+    "provider": "messenger"
   },
   {
     "from": "351966141650",
@@ -15,7 +38,19 @@
     "messageId": "test-msg-002",
     "timestamp": "2026-01-16T19:03:15Z",
     "type": "incoming",
-    "messageType": "text"
+    "messageType": "text",
+    "provider": "whatsapp"
+  },
+  {
+    "from": "1234567890",
+    "igsid": "1234567890",
+    "to": "meta-page-id",
+    "text": "Obrigado pela resposta rápida!",
+    "messageId": "test-msg-ig-002",
+    "timestamp": "2026-01-16T19:02:45Z",
+    "type": "incoming",
+    "messageType": "quick_reply",
+    "provider": "instagram"
   },
   {
     "from": "351961725398",
@@ -24,6 +59,7 @@
     "messageId": "test-msg-003",
     "timestamp": "2026-01-16T18:58:42Z",
     "type": "incoming",
-    "messageType": "button"
+    "messageType": "button",
+    "provider": "whatsapp"
   }
 ]

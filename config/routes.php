@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use WhatsApp\Adapter\Http\Controllers\HealthController;
 use WhatsApp\Adapter\Http\Controllers\MessageController;
+use WhatsApp\Adapter\Http\Controllers\MetricsController;
+use WhatsApp\Adapter\Http\Controllers\NumberValidationController;
 use WhatsApp\Adapter\Http\Controllers\TemplateController;
 use WhatsApp\Adapter\Http\Controllers\WebhookController;
 use WhatsApp\Adapter\Http\RouterInterface;
@@ -70,7 +72,30 @@ return function (RouterInterface $router, array $container): void {
         return $controller->getMessageStatus($request, $params['messageId'] ?? '');
     });
 
+    // WhatsApp number validation endpoints
+    $router->addRoute('GET', '/api/whatsapp/check-number', function ($request) use ($container) {
+        $controller = $container[NumberValidationController::class];
+        return $controller->checkNumber($request);
+    });
+
+    $router->addRoute('POST', '/api/whatsapp/check-numbers', function ($request) use ($container) {
+        $controller = $container[NumberValidationController::class];
+        return $controller->checkNumbers($request);
+    });
+
     // Webhook endpoints
+    
+    // Meta webhook (Instagram + Messenger) - supports both GET and POST
+    $router->addRoute('GET', '/webhooks/meta', function ($request) use ($container) {
+        $controller = $container[WebhookController::class];
+        return $controller->handleMetaWebhook($request);
+    });
+
+    $router->addRoute('POST', '/webhooks/meta', function ($request) use ($container) {
+        $controller = $container[WebhookController::class];
+        return $controller->handleMetaWebhook($request);
+    });
+
     $router->addRoute('POST', '/webhooks/delivery-reports', function ($request) use ($container) {
         $controller = $container[WebhookController::class];
         return $controller->handleDeliveryReport($request);
@@ -84,5 +109,56 @@ return function (RouterInterface $router, array $container): void {
     $router->addRoute('POST', '/webhooks/template-updates', function ($request) use ($container) {
         $controller = $container[WebhookController::class];
         return $controller->handleTemplateUpdate($request);
+    });
+
+    // Metrics endpoints
+    $router->addRoute('GET', '/metrics/meta', function ($request) use ($container) {
+        $controller = $container[MetricsController::class];
+        return $controller->getSummary($request);
+    });
+
+    $router->addRoute('GET', '/metrics/meta/success-rate', function ($request) use ($container) {
+        $controller = $container[MetricsController::class];
+        return $controller->getSuccessRate($request);
+    });
+
+    $router->addRoute('GET', '/metrics/meta/response-time', function ($request) use ($container) {
+        $controller = $container[MetricsController::class];
+        return $controller->getResponseTime($request);
+    });
+
+    $router->addRoute('GET', '/metrics/meta/errors', function ($request) use ($container) {
+        $controller = $container[MetricsController::class];
+        return $controller->getErrors($request);
+    });
+
+    $router->addRoute('GET', '/metrics/meta/webhooks', function ($request) use ($container) {
+        $controller = $container[MetricsController::class];
+        return $controller->getWebhooks($request);
+    });
+
+    $router->addRoute('GET', '/metrics/meta/messaging-window-errors', function ($request) use ($container) {
+        $controller = $container[MetricsController::class];
+        return $controller->getMessagingWindowErrors($request);
+    });
+
+    $router->addRoute('GET', '/metrics/meta/alerts', function ($request) use ($container) {
+        $controller = $container[MetricsController::class];
+        return $controller->getAlerts($request);
+    });
+
+    $router->addRoute('GET', '/metrics/meta/circuit-breaker', function ($request) use ($container) {
+        $controller = $container[MetricsController::class];
+        return $controller->getCircuitBreakerStatus($request);
+    });
+
+    $router->addRoute('GET', '/metrics/meta/rate-limit', function ($request) use ($container) {
+        $controller = $container[MetricsController::class];
+        return $controller->getRateLimitStatus($request);
+    });
+
+    $router->addRoute('GET', '/metrics/meta/health', function ($request) use ($container) {
+        $controller = $container[MetricsController::class];
+        return $controller->getHealthCheck($request);
     });
 };

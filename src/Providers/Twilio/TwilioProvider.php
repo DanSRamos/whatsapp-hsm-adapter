@@ -19,12 +19,12 @@ use WhatsApp\Adapter\Providers\Models\ProviderMessageStatus;
 use WhatsApp\Adapter\Providers\Models\ProviderSendResult;
 use WhatsApp\Adapter\Providers\Models\ProviderTemplate;
 use WhatsApp\Adapter\Providers\Models\TemplateUpdate;
-use WhatsApp\Adapter\Providers\WhatsAppProviderInterface;
+use WhatsApp\Adapter\Providers\MessagingProviderInterface;
 
 /**
  * Twilio WhatsApp provider implementation
  */
-class TwilioProvider implements WhatsAppProviderInterface
+class TwilioProvider implements MessagingProviderInterface
 {
     private const API_VERSION = '2010-04-01';
 
@@ -320,6 +320,86 @@ class TwilioProvider implements WhatsAppProviderInterface
             components: $data['types'] ?? [],
             rejectionReason: $data['rejection_reason'] ?? null
         );
+    }
+
+    /**
+     * Check if a phone number has WhatsApp
+     *
+     * @param string $phoneNumber Phone number in E.164 format
+     * @return \WhatsApp\Adapter\Services\WhatsAppNumberValidationResult
+     */
+    public function checkWhatsAppNumber(string $phoneNumber): \WhatsApp\Adapter\Services\WhatsAppNumberValidationResult
+    {
+        $this->logger->debug('Checking WhatsApp number with Twilio', [
+            'phone_number' => substr($phoneNumber, 0, 4) . '***' . substr($phoneNumber, -2)
+        ]);
+
+        try {
+            // Twilio doesn't have a direct endpoint to check WhatsApp availability
+            // We use the Lookup API with WhatsApp carrier information
+            $accountSid = $this->config['account_sid'];
+            $authToken = $this->config['auth_token'];
+            $baseUrl = 'https://lookups.twilio.com';
+            
+            // Remove + from phone number for Twilio Lookup API
+            $cleanNumber = ltrim($phoneNumber, '+');
+            $url = "{$baseUrl}/v2/PhoneNumbers/{$cleanNumber}?Fields=line_type_intelligence";
+
+            $options = [
+                'auth' => [$accountSid, $authToken],
+                'headers' => [
+                    'Accept' => 'application/json'
+                ]
+            ];
+
+            $response = $this->httpClient->request('GET', $url, $options);
+            $statusCode = $response->getStatusCode();
+            $body = json_decode((string) $response->getBody(), true);
+
+            if ($statusCode >= 200 && $statusCode < 300) {
+                // Check if WhatsApp is available
+                // Twilio Lookup doesn't directly tell if number has WhatsApp
+                // We can only verify if it's a valid mobile number
+                $lineType = $body['line_type_intelligence']['type'] ?? null;
+                $carrier = $body['line_type_intelligence']['carrier_name'] ?? null;
+
+                // If it's a mobile number, it potentially has WhatsApp
+                // But we can't be 100% certain without actually trying to send
+                $isMobile = in_array($lineType, ['mobile', 'voip']);
+
+                return new \WhatsApp\Adapter\Services\WhatsAppNumberValidationResult(
+                    phoneNumber: $phoneNumber,
+                    hasWhatsApp: $isMobile ? null : false, // null = uncertain, false = definitely not
+                    accountType: $isMobile ? 'unknown' : null,
+                    provider: $this->getName(),
+                    metadata: [
+                        'line_type' => $lineType,
+                        'carrier' => $carrier,
+                        'note' => 'Twilio cannot definitively confirm WhatsApp availability. This is based on line type.'
+                    ]
+                );
+            }
+
+            return new \WhatsApp\Adapter\Services\WhatsAppNumberValidationResult(
+                phoneNumber: $phoneNumber,
+                hasWhatsApp: null,
+                error: $body['message'] ?? 'Failed to lookup phone number',
+                provider: $this->getName()
+            );
+
+        } catch (\Exception $e) {
+            $this->logger->error('Failed to check WhatsApp number', [
+                'error' => $e->getMessage(),
+                'phone_number' => substr($phoneNumber, 0, 4) . '***' . substr($phoneNumber, -2)
+            ]);
+
+            return new \WhatsApp\Adapter\Services\WhatsAppNumberValidationResult(
+                phoneNumber: $phoneNumber,
+                hasWhatsApp: null,
+                error: $e->getMessage(),
+                provider: $this->getName()
+            );
+        }
     }
 
     /**

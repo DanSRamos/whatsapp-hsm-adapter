@@ -4,13 +4,16 @@ Um adapter PHP para integração com APIs WhatsApp de múltiplos provedores (Inf
 
 ## Características
 
-- ✅ Suporte multi-provider (Infobip, Twilio)
-- ✅ Envio de mensagens HSM/Template
+- ✅ Suporte multi-provider (Infobip, Twilio, Meta)
+- ✅ Suporte para WhatsApp, Instagram e Facebook Messenger
+- ✅ Envio de mensagens HSM/Template (WhatsApp)
 - ✅ Envio de mensagens de texto livre
 - ✅ Envio de media (imagem, documento, áudio, vídeo)
 - ✅ Mensagens interativas (botões e listas)
+- ✅ Quick Replies e Generic Templates (Instagram/Messenger)
 - ✅ Webhooks para delivery reports e mensagens recebidas
-- ✅ Sincronização automática de templates
+- ✅ Sincronização automática de templates (WhatsApp)
+- ✅ Detecção automática de plataforma (Instagram vs Messenger)
 - ✅ Rate limiting e autenticação
 - ✅ Retry automático com backoff exponencial
 - ✅ Logging estruturado e monitorização
@@ -65,6 +68,14 @@ TWILIO_ACCOUNT_SID=your_account_sid
 TWILIO_AUTH_TOKEN=your_auth_token
 TWILIO_SENDER=+14155551234
 TWILIO_WEBHOOK_SECRET=your_webhook_secret
+
+# Meta Configuration (Instagram + Facebook Messenger)
+META_PAGE_ACCESS_TOKEN=your_page_access_token
+META_APP_ID=your_app_id
+META_APP_SECRET=your_app_secret
+META_PAGE_ID=your_page_id
+META_VERIFY_TOKEN=your_verify_token
+META_API_VERSION=v21.0
 
 # Database Configuration
 DB_CONNECTION=mysql
@@ -159,11 +170,20 @@ server {
 
 ### 6. Configure os webhooks
 
-Configure os seguintes URLs no painel do seu provedor WhatsApp:
+Configure os seguintes URLs no painel do seu provedor:
+
+**WhatsApp (Infobip/Twilio):**
 
 - **Delivery Reports:** `https://your-domain.com/webhooks/delivery-reports`
 - **Incoming Messages:** `https://your-domain.com/webhooks/incoming-messages`
 - **Template Updates:** `https://your-domain.com/webhooks/template-updates`
+
+**Meta (Instagram + Facebook Messenger):**
+
+- **Webhook URL:** `https://your-domain.com/webhook/meta`
+- **Eventos:** messages, messaging_postbacks, message_deliveries, message_reads
+
+Para configurar Meta, consulte o [guia de setup do Instagram/Messenger](docs/INSTAGRAM_SETUP.md).
 
 ## Uso
 
@@ -212,6 +232,284 @@ echo "Templates sincronizados: " . $data['data']['total'];
 ```
 
 Para mais exemplos, consulte a [documentação da API](docs/API.md).
+
+## Integração Meta (Instagram + Facebook Messenger)
+
+### Visão Geral
+
+O adapter suporta Instagram Direct Messages e Facebook Messenger através do Meta Provider, que utiliza a Messenger Platform API unificada da Meta. Uma única configuração funciona para ambas as plataformas.
+
+### Setup Rápido
+
+1. **Crie um App Meta**: Acesse [Meta for Developers](https://developers.facebook.com/)
+2. **Configure Facebook Page**: Crie ou conecte uma Facebook Page
+3. **Conecte Instagram**: Conecte uma conta Instagram Professional/Business
+4. **Gere Page Access Token**: Token de longa duração ou permanente
+5. **Configure Webhooks**: URL `https://your-domain.com/webhook/meta`
+
+Para instruções detalhadas, consulte o [Guia de Setup do Instagram/Messenger](docs/INSTAGRAM_SETUP.md).
+
+### Diferenças: WhatsApp vs Instagram vs Messenger
+
+| Característica          | WhatsApp           | Instagram                   | Facebook Messenger      |
+| ----------------------- | ------------------ | --------------------------- | ----------------------- |
+| **Identificador**       | Número de telefone | IGSID (Instagram-Scoped ID) | PSID (Page-Scoped ID)   |
+| **Templates HSM**       | ✅ Suportado       | ❌ Não suportado\*          | ❌ Não suportado\*      |
+| **Texto Livre**         | ✅ Suportado       | ✅ Suportado                | ✅ Suportado            |
+| **Mídia**               | ✅ Suportado       | ✅ Suportado                | ✅ Suportado            |
+| **Múltiplas Imagens**   | ❌ 1 por mensagem  | ✅ Até 10 por mensagem      | ❌ 1 por mensagem\*\*   |
+| **Quick Replies**       | ✅ Até 3 botões    | ✅ Até 13 quick replies     | ✅ Até 13 quick replies |
+| **Generic Template**    | ❌ Não suportado   | ✅ Suportado                | ✅ Suportado            |
+| **Button Template**     | ❌ Não suportado   | ❌ Não suportado            | ✅ Suportado            |
+| **Janela de Mensagens** | 24 horas           | 24 horas                    | 24 horas                |
+| **Tamanho Imagem**      | 5MB                | 8MB                         | 25MB                    |
+| **Tamanho Vídeo**       | 16MB               | 25MB                        | 25MB                    |
+| **API**                 | Provider-specific  | Meta Graph API              | Meta Graph API          |
+| **Autenticação**        | API Key            | Page Access Token           | Page Access Token       |
+
+\* Templates HSM são automaticamente convertidos para texto simples  
+\*\* Messenger suporta múltiplas imagens via carousel template
+
+### Enviar Mensagem de Texto (Instagram)
+
+```php
+<?php
+
+use GuzzleHttp\Client;
+
+$client = new Client([
+    'base_uri' => 'https://your-domain.com/api',
+    'headers' => [
+        'Authorization' => 'Bearer YOUR_API_KEY',
+        'Content-Type' => 'application/json'
+    ]
+]);
+
+$response = $client->post('/messages/send', [
+    'json' => [
+        'provider' => 'meta',
+        'platform' => 'instagram',
+        'recipient' => '1234567890', // IGSID
+        'message' => [
+            'text' => 'Olá! Como posso ajudar?'
+        ]
+    ]
+]);
+
+$data = json_decode($response->getBody(), true);
+echo "Message ID: " . $data['data']['messageId'];
+```
+
+### Enviar Mensagem de Texto (Messenger)
+
+```php
+$response = $client->post('/messages/send', [
+    'json' => [
+        'provider' => 'meta',
+        'platform' => 'messenger',
+        'recipient' => '9876543210', // PSID
+        'message' => [
+            'text' => 'Olá! Como posso ajudar?'
+        ]
+    ]
+]);
+```
+
+### Enviar Mídia (Instagram/Messenger)
+
+```php
+// Enviar imagem
+$response = $client->post('/messages/send', [
+    'json' => [
+        'provider' => 'meta',
+        'recipient' => 'IGSID_OR_PSID',
+        'message' => [
+            'type' => 'image',
+            'url' => 'https://example.com/image.jpg'
+        ]
+    ]
+]);
+
+// Enviar múltiplas imagens (Instagram apenas)
+$response = $client->post('/messages/send', [
+    'json' => [
+        'provider' => 'meta',
+        'platform' => 'instagram',
+        'recipient' => 'IGSID',
+        'message' => [
+            'type' => 'images',
+            'urls' => [
+                'https://example.com/image1.jpg',
+                'https://example.com/image2.jpg',
+                'https://example.com/image3.jpg'
+            ]
+        ]
+    ]
+]);
+```
+
+### Enviar Quick Replies (Instagram/Messenger)
+
+```php
+$response = $client->post('/messages/send', [
+    'json' => [
+        'provider' => 'meta',
+        'recipient' => 'IGSID_OR_PSID',
+        'message' => [
+            'text' => 'Escolha uma opção:',
+            'quick_replies' => [
+                ['title' => 'Opção 1', 'payload' => 'OPTION_1'],
+                ['title' => 'Opção 2', 'payload' => 'OPTION_2'],
+                ['title' => 'Opção 3', 'payload' => 'OPTION_3']
+            ]
+        ]
+    ]
+]);
+```
+
+### Enviar Generic Template (Instagram/Messenger)
+
+```php
+$response = $client->post('/messages/send', [
+    'json' => [
+        'provider' => 'meta',
+        'recipient' => 'IGSID_OR_PSID',
+        'message' => [
+            'type' => 'template',
+            'template_type' => 'generic',
+            'elements' => [
+                [
+                    'title' => 'Produto 1',
+                    'subtitle' => 'Descrição do produto',
+                    'image_url' => 'https://example.com/product1.jpg',
+                    'buttons' => [
+                        ['type' => 'web_url', 'title' => 'Ver Mais', 'url' => 'https://example.com/product1']
+                    ]
+                ],
+                [
+                    'title' => 'Produto 2',
+                    'subtitle' => 'Descrição do produto',
+                    'image_url' => 'https://example.com/product2.jpg',
+                    'buttons' => [
+                        ['type' => 'web_url', 'title' => 'Ver Mais', 'url' => 'https://example.com/product2']
+                    ]
+                ]
+            ]
+        ]
+    ]
+]);
+```
+
+### Enviar Button Template (Messenger apenas)
+
+```php
+$response = $client->post('/messages/send', [
+    'json' => [
+        'provider' => 'meta',
+        'platform' => 'messenger',
+        'recipient' => 'PSID',
+        'message' => [
+            'type' => 'template',
+            'template_type' => 'button',
+            'text' => 'Escolha uma ação:',
+            'buttons' => [
+                ['type' => 'web_url', 'title' => 'Visitar Site', 'url' => 'https://example.com'],
+                ['type' => 'postback', 'title' => 'Falar com Atendente', 'payload' => 'CONTACT_AGENT'],
+                ['type' => 'phone_number', 'title' => 'Ligar', 'payload' => '+351912345678']
+            ]
+        ]
+    ]
+]);
+```
+
+### Detecção Automática de Plataforma
+
+O sistema detecta automaticamente se a mensagem é para Instagram ou Messenger baseado no formato do ID:
+
+```php
+// Não é necessário especificar 'platform' - o sistema detecta automaticamente
+$response = $client->post('/messages/send', [
+    'json' => [
+        'provider' => 'meta',
+        'recipient' => 'IGSID_OR_PSID', // Sistema detecta automaticamente
+        'message' => [
+            'text' => 'Mensagem automática'
+        ]
+    ]
+]);
+```
+
+### Limitações Importantes
+
+#### Janela de 24 Horas
+
+Você só pode enviar mensagens dentro de 24 horas após a última mensagem do usuário. Após esse período:
+
+- ❌ Mensagens promocionais não são permitidas
+- ✅ Você pode usar **Message Tags** para casos específicos:
+  - `CONFIRMED_EVENT_UPDATE` - Atualizações de eventos
+  - `POST_PURCHASE_UPDATE` - Atualizações pós-compra
+  - `ACCOUNT_UPDATE` - Atualizações de conta
+
+```php
+// Enviar com message tag (após 24h)
+$response = $client->post('/messages/send', [
+    'json' => [
+        'provider' => 'meta',
+        'recipient' => 'IGSID_OR_PSID',
+        'message' => [
+            'text' => 'Seu pedido foi enviado!',
+            'tag' => 'POST_PURCHASE_UPDATE'
+        ]
+    ]
+]);
+```
+
+#### Templates HSM
+
+Instagram e Messenger não suportam templates HSM do WhatsApp. O sistema converte automaticamente:
+
+```php
+// Template HSM (WhatsApp)
+$response = $client->post('/messages/hsm', [
+    'json' => [
+        'provider' => 'whatsapp',
+        'to' => '+351912345678',
+        'templateName' => 'welcome_message',
+        'parameters' => ['João']
+    ]
+]);
+
+// Mesmo template convertido para Meta (Instagram/Messenger)
+// Sistema substitui {{1}} por 'João' automaticamente
+$response = $client->post('/messages/hsm', [
+    'json' => [
+        'provider' => 'meta',
+        'recipient' => 'IGSID_OR_PSID',
+        'templateName' => 'welcome_message',
+        'parameters' => ['João']
+    ]
+]);
+// Resultado: "Olá João, bem-vindo!" (texto simples)
+```
+
+### Admin Panel
+
+O admin panel suporta todas as três plataformas com interface unificada:
+
+1. **Seletor de Provider**: Escolha entre WhatsApp, Instagram ou Messenger
+2. **Campos Dinâmicos**: Interface adapta-se ao provider selecionado
+3. **Visualização Unificada**: Veja mensagens de todas as plataformas
+4. **Filtros**: Filtre por provider, status, data, etc.
+
+Acesse: `https://your-domain.com/admin-panel/`
+
+### Recursos Adicionais
+
+- [Guia de Setup Completo](docs/INSTAGRAM_SETUP.md)
+- [Guia de Troubleshooting](docs/TROUBLESHOOTING.md)
+- [Documentação da API Meta](docs/META_REQUEST_ADAPTER.md)
+- [Meta for Developers](https://developers.facebook.com/)
 
 ## Testes
 
@@ -476,8 +774,13 @@ Este projeto está licenciado sob a licença MIT - veja o arquivo [LICENSE](LICE
 
 ## Roadmap
 
-- [ ] Suporte para mais provedores (360Dialog, MessageBird)
+- [x] Suporte para Meta (Instagram + Facebook Messenger)
+- [x] Detecção automática de plataforma (Instagram vs Messenger)
+- [x] Admin panel multi-provider
+- [ ] Suporte para mais provedores WhatsApp (360Dialog, MessageBird)
 - [ ] Interface web para gestão de templates
-- [ ] Métricas e analytics
+- [ ] Métricas e analytics por provider
 - [ ] Suporte para WhatsApp Business API Cloud
 - [ ] Integração com CRM populares
+- [ ] Suporte para Message Tags (Meta)
+- [ ] Suporte para Persistent Menu (Messenger)

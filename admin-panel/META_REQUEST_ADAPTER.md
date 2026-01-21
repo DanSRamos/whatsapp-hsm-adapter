@@ -1,0 +1,1 @@
+../docs/META_REQUEST_ADAPTER.md
