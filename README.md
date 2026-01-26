@@ -1,6 +1,501 @@
-# WhatsApp HSM Adapter
+# Multi-Platform Messaging Adapter
 
-Um adapter PHP para integração com APIs WhatsApp de múltiplos provedores (Infobip, Twilio, etc.). Fornece uma camada de abstração unificada para envio e recepção de mensagens WhatsApp, incluindo HSM (Highly Structured Messages), mensagens de texto livre, media, e mensagens interativas.
+A PHP adapter for integrating with multiple messaging platform APIs (WhatsApp, Instagram, Facebook Messenger, and RCS). Provides a unified abstraction layer for sending and receiving messages across different platforms, including HSM (Highly Structured Messages), free-form text, media, and interactive messages.
+
+## Features
+
+### WhatsApp & HSM
+
+- ✅ **HSM/Template messages** - Send approved WhatsApp Business templates
+- ✅ **Template synchronization** - Automatic sync of approved templates
+- ✅ **Template parameters** - Dynamic content in HSM messages
+- ✅ **Multi-provider support** - Infobip, Twilio for WhatsApp
+- ✅ **Free-form text** - Send text messages within 24-hour window
+- ✅ **Media messages** - Images, documents, audio, video (WhatsApp limits apply)
+- ✅ **Interactive buttons** - Up to 3 quick reply buttons
+- ✅ **List messages** - Interactive lists for WhatsApp
+
+### Instagram & Facebook Messenger
+
+- ✅ **Text messages** - Free-form messaging
+- ✅ **Quick Replies** - Up to 13 quick reply buttons
+- ✅ **Generic Templates** - Rich card carousels
+- ✅ **Multiple images** - Up to 10 images per message (Instagram)
+- ✅ **Automatic platform detection** - Instagram vs Messenger
+- ✅ **24-hour messaging window** - With message tags support
+
+### RCS (Rich Communication Services)
+
+- ✅ **Rich Cards** - Interactive cards with images and buttons
+- ✅ **Carousels** - Scrollable product catalogs
+- ✅ **Suggestions** - Quick reply buttons and actions
+- ✅ **File sharing** - Documents, PDFs, and files
+- ✅ **High-quality media** - Images and videos
+
+### Core Features
+
+- ✅ **Web Admin Panel** - Easy API interaction without coding
+- ✅ **Webhooks** - Delivery reports and incoming messages
+- ✅ **Rate limiting** - Prevent API abuse
+- ✅ **Automatic retry** - Exponential backoff on failures
+- ✅ **Structured logging** - JSON logs with context
+- ✅ **Health checks** - System monitoring endpoints
+- ✅ **Property-based testing** - Comprehensive test coverage
+
+## Requirements
+
+- PHP 8.1 or higher
+- MySQL 5.7+ or PostgreSQL 12+
+- Redis 6.0+
+- Composer
+- PHP Extensions: PDO, Redis, JSON, cURL
+
+## Quick Start
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/your-org/multi-platform-messaging-adapter.git
+cd multi-platform-messaging-adapter
+```
+
+### 2. Install dependencies
+
+```bash
+composer install
+```
+
+### 3. Configure environment variables
+
+Copy the example file and configure your credentials:
+
+```bash
+cp .env.example .env
+```
+
+Edit the `.env` file with your settings:
+
+```env
+# WhatsApp Provider Configuration
+WHATSAPP_PROVIDER=infobip
+
+# Infobip Configuration
+INFOBIP_API_KEY=your_api_key_here
+INFOBIP_BASE_URL=https://api.infobip.com
+INFOBIP_SENDER=447860099299
+INFOBIP_WEBHOOK_SECRET=your_webhook_secret
+
+# Infobip RCS Configuration
+INFOBIP_RCS_SENDER=your_rcs_sender_id
+
+# Twilio Configuration (optional)
+TWILIO_ACCOUNT_SID=your_account_sid
+TWILIO_AUTH_TOKEN=your_auth_token
+TWILIO_SENDER=+14155551234
+TWILIO_WEBHOOK_SECRET=your_webhook_secret
+
+# Meta Configuration (Instagram + Facebook Messenger)
+META_PAGE_ACCESS_TOKEN=your_page_access_token
+META_APP_ID=your_app_id
+META_APP_SECRET=your_app_secret
+META_PAGE_ID=your_page_id
+META_VERIFY_TOKEN=your_verify_token
+META_API_VERSION=v21.0
+
+# Database Configuration
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=whatsapp_adapter
+DB_USERNAME=root
+DB_PASSWORD=
+
+# Redis Configuration
+REDIS_HOST=127.0.0.1
+REDIS_PORT=6379
+REDIS_PASSWORD=
+REDIS_DATABASE=0
+REDIS_CACHE_DB=1
+```
+
+### 4. Run migrations
+
+```bash
+php bin/migrate.php
+```
+
+Or manually execute SQL scripts in `database/migrations/`.
+
+### 5. Access the Admin Panel
+
+Start the built-in PHP server:
+
+```bash
+cd admin-panel
+php -S localhost:8081
+```
+
+Then open your browser at: **http://localhost:8081/index-tabs.html**
+
+The Admin Panel provides:
+
+- 💬 **Message Management** - Send messages across all platforms
+- 📱 **RCS Interface** - Send rich cards, carousels, and suggestions
+- 📚 **Documentation** - Interactive API documentation
+- 📊 **Monitoring** - Alerts and system health dashboard
+
+## Admin Panel
+
+The **Web Admin Panel** is the easiest way to interact with the messaging APIs without writing code.
+
+### Features
+
+- **Unified Interface**: Send messages to WhatsApp, Instagram, Messenger, and RCS from one place
+- **Interactive Forms**: Dynamic forms that adapt to each platform's capabilities
+- **Message History**: View all sent and received messages
+- **Template Management**: Browse and use approved WhatsApp templates
+- **RCS Rich Messaging**: Create rich cards, carousels, and suggestions visually
+- **API Documentation**: Interactive Swagger UI for testing endpoints
+- **Monitoring Dashboard**: Real-time metrics, alerts, and system health
+
+### Access
+
+1. **Local Development**:
+
+   ```bash
+   cd admin-panel
+   php -S localhost:8081
+   ```
+
+   Open: http://localhost:8081/index-tabs.html
+
+2. **Production**:
+   Configure your web server to serve the `admin-panel` directory
+   Access: https://your-domain.com/admin-panel/
+
+### Tabs
+
+- **💬 Messages**: Send and manage messages across all platforms
+- **📱 RCS**: Rich Communication Services interface
+- **📚 Documentation**: API guides and interactive documentation
+- **📊 Monitoring**: Alerts, metrics, and system health
+
+## Platform Comparison
+
+| Feature              | WhatsApp           | Instagram                   | Facebook Messenger        | RCS               |
+| -------------------- | ------------------ | --------------------------- | ------------------------- | ----------------- |
+| **Identifier**       | Phone number       | IGSID (Instagram-Scoped ID) | PSID (Page-Scoped ID)     | Phone number      |
+| **HSM Templates**    | ✅ Supported       | ❌ Not supported\*          | ❌ Not supported\*        | ❌ Not supported  |
+| **Free Text**        | ✅ Supported       | ✅ Supported                | ✅ Supported              | ✅ Supported      |
+| **Media**            | ✅ Supported       | ✅ Supported                | ✅ Supported              | ✅ Supported      |
+| **Multiple Images**  | ❌ 1 per message   | ✅ Up to 10 per message     | ❌ 1 per message\*\*      | ✅ Via carousel   |
+| **Quick Replies**    | ✅ Up to 3 buttons | ✅ Up to 13 quick replies   | ✅ Up to 13 quick replies | ✅ Suggestions    |
+| **Rich Cards**       | ❌ Not supported   | ❌ Not supported            | ❌ Not supported          | ✅ Supported      |
+| **Carousels**        | ❌ Not supported   | ✅ Generic template         | ✅ Generic template       | ✅ Native support |
+| **Messaging Window** | 24 hours           | 24 hours                    | 24 hours                  | No restriction    |
+| **Image Size**       | 5MB                | 8MB                         | 25MB                      | 2MB               |
+| **Video Size**       | 16MB               | 25MB                        | 25MB                      | 10MB              |
+| **API**              | Provider-specific  | Meta Graph API              | Meta Graph API            | Infobip RCS API   |
+| **Authentication**   | API Key            | Page Access Token           | Page Access Token         | API Key           |
+
+\* HSM templates are automatically converted to plain text  
+\*\* Messenger supports multiple images via carousel template
+
+## RCS (Rich Communication Services)
+
+RCS is the next generation of SMS, offering rich media and interactive features similar to modern messaging apps.
+
+### RCS Features
+
+- 📸 **High-quality media**: Images, videos, and files
+- 🎴 **Rich cards**: Interactive cards with images, titles, descriptions, and buttons
+- 🎠 **Carousels**: Scrollable cards for product catalogs
+- 💬 **Suggestions**: Quick reply buttons and suggested actions
+- 📎 **File sharing**: Send documents, PDFs, and other files
+- ✅ **Read receipts**: Delivery and read confirmations
+- 🔗 **Action buttons**: Web URLs, phone calls, location sharing
+
+### Send RCS Text Message
+
+```php
+<?php
+
+use GuzzleHttp\Client;
+
+$client = new Client([
+    'base_uri' => 'https://your-domain.com/api',
+    'headers' => [
+        'Authorization' => 'Bearer YOUR_API_KEY',
+        'Content-Type' => 'application/json'
+    ]
+]);
+
+$response = $client->post('/rcs/send', [
+    'json' => [
+        'to' => '+351912345678',
+        'text' => 'Hello! How can I help you today?'
+    ]
+]);
+```
+
+### Send RCS Rich Card
+
+```php
+$response = $client->post('/rcs/send-card', [
+    'json' => [
+        'to' => '+351912345678',
+        'card' => [
+            'title' => 'Product Name',
+            'description' => 'Product description goes here',
+            'media' => [
+                'url' => 'https://example.com/product.jpg',
+                'height' => 'TALL'
+            ],
+            'suggestions' => [
+                [
+                    'type' => 'reply',
+                    'text' => 'Buy Now',
+                    'postbackData' => 'BUY_PRODUCT_123'
+                ],
+                [
+                    'type' => 'url',
+                    'text' => 'View Details',
+                    'url' => 'https://example.com/product/123'
+                ]
+            ]
+        ]
+    ]
+]);
+```
+
+### Send RCS Carousel
+
+```php
+$response = $client->post('/rcs/send-carousel', [
+    'json' => [
+        'to' => '+351912345678',
+        'carousel' => [
+            'width' => 'MEDIUM',
+            'cards' => [
+                [
+                    'title' => 'Product 1',
+                    'description' => 'First product',
+                    'media' => ['url' => 'https://example.com/product1.jpg'],
+                    'suggestions' => [
+                        ['type' => 'reply', 'text' => 'Buy', 'postbackData' => 'BUY_1']
+                    ]
+                ],
+                [
+                    'title' => 'Product 2',
+                    'description' => 'Second product',
+                    'media' => ['url' => 'https://example.com/product2.jpg'],
+                    'suggestions' => [
+                        ['type' => 'reply', 'text' => 'Buy', 'postbackData' => 'BUY_2']
+                    ]
+                ]
+            ]
+        ]
+    ]
+]);
+```
+
+### RCS Admin Panel
+
+The Admin Panel includes a dedicated RCS interface at `/admin-panel/rcs.html` with:
+
+- 💬 **Text Messages**: Send simple text messages
+- 🎴 **Rich Cards**: Create cards with images, titles, and buttons
+- 🎠 **Carousels**: Build multi-card carousels
+- 📎 **File Sharing**: Send documents and files
+- 💡 **Suggestions**: Add quick reply buttons
+
+### RCS Requirements
+
+- RCS-enabled device and carrier
+- Infobip RCS account and sender ID
+- Configured `INFOBIP_RCS_SENDER` in `.env`
+
+For more details, see the [RCS documentation](docs/RCS_GUIDE.md).
+
+## Usage Examples
+
+### Send WhatsApp HSM Template
+
+```php
+$response = $client->post('/messages/hsm', [
+    'json' => [
+        'to' => '+351912345678',
+        'templateName' => 'welcome_message',
+        'templateLanguage' => 'pt',
+        'parameters' => ['João']
+    ]
+]);
+```
+
+### Send Instagram Message
+
+```php
+$response = $client->post('/messages/send', [
+    'json' => [
+        'provider' => 'meta',
+        'platform' => 'instagram',
+        'recipient' => '1234567890', // IGSID
+        'message' => [
+            'text' => 'Hello! How can I help?'
+        ]
+    ]
+]);
+```
+
+### Send Messenger Quick Replies
+
+```php
+$response = $client->post('/messages/send', [
+    'json' => [
+        'provider' => 'meta',
+        'platform' => 'messenger',
+        'recipient' => '9876543210', // PSID
+        'message' => [
+            'text' => 'Choose an option:',
+            'quick_replies' => [
+                ['title' => 'Option 1', 'payload' => 'OPTION_1'],
+                ['title' => 'Option 2', 'payload' => 'OPTION_2']
+            ]
+        ]
+    ]
+]);
+```
+
+For more examples, see the [API documentation](docs/API.md).
+
+## API Documentation
+
+### Interactive Documentation
+
+Access the interactive Swagger UI through the Admin Panel:
+
+**http://localhost:8081/api-docs.html**
+
+Or use the API documentation tab in the Admin Panel.
+
+### Endpoints
+
+- `POST /messages/send` - Send a message
+- `POST /messages/hsm` - Send HSM template
+- `POST /rcs/send` - Send RCS text message
+- `POST /rcs/send-card` - Send RCS rich card
+- `POST /rcs/send-carousel` - Send RCS carousel
+- `GET /messages/{id}/status` - Get message status
+- `POST /templates/sync` - Sync WhatsApp templates
+- `GET /health` - Health check
+
+Full API reference: [docs/API.md](docs/API.md)
+
+## Testing
+
+### Run all tests
+
+```bash
+./vendor/bin/pest
+```
+
+### Run unit tests only
+
+```bash
+./vendor/bin/pest tests/Unit
+```
+
+### Run property tests only
+
+```bash
+./vendor/bin/pest tests/Property
+```
+
+### Run with coverage
+
+```bash
+./vendor/bin/pest --coverage
+```
+
+## Monitoring
+
+### Health Check
+
+```bash
+curl https://your-domain.com/health
+```
+
+### Admin Panel Monitoring
+
+Access the monitoring dashboard in the Admin Panel:
+
+**http://localhost:8081/monitoring.html**
+
+Features:
+
+- ⏱️ **Rate Limits**: Monitor hourly and daily limits
+- 🔌 **Circuit Breaker**: Check circuit breaker status
+- 🚨 **Alerts**: View recent alerts by severity
+- 💚 **System Health**: Overall system health status
+- 📈 **Performance**: Response times and metrics
+
+## Documentation
+
+- [API Reference](docs/API.md)
+- [Instagram/Messenger Setup](docs/INSTAGRAM_SETUP.md)
+- [Meta Credentials Setup](docs/META_CREDENTIALS_SETUP.md)
+- [Production Deployment](docs/META_PRODUCTION_DEPLOYMENT.md)
+- [Troubleshooting Guide](docs/TROUBLESHOOTING.md)
+- [Meta Request Adapter](docs/META_REQUEST_ADAPTER.md)
+
+## Security
+
+### Best Practices
+
+1. **Never commit credentials** - Use environment variables
+2. **Use HTTPS** - All communications must be encrypted
+3. **Validate webhooks** - Always validate HMAC signatures
+4. **Implement rate limiting** - Prevent API abuse
+5. **Rotate API keys** - Rotate keys periodically
+6. **Monitor logs** - Set up alerts for critical errors
+7. **Update dependencies** - Keep libraries up to date
+
+## Contributing
+
+Contributions are welcome! Please:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Support
+
+- **Documentation**: [docs/API.md](docs/API.md)
+- **Admin Panel**: http://localhost:8081/index-tabs.html
+- **Issues**: https://github.com/your-org/multi-platform-messaging-adapter/issues
+- **Email**: support@example.com
+
+## Roadmap
+
+- [x] Meta support (Instagram + Facebook Messenger)
+- [x] Automatic platform detection (Instagram vs Messenger)
+- [x] Multi-provider admin panel
+- [x] RCS support (Rich Communication Services)
+- [x] RCS rich cards and carousels
+- [x] Interactive API documentation (Swagger UI)
+- [x] Monitoring dashboard
+- [ ] More WhatsApp providers (360Dialog, MessageBird)
+- [ ] WhatsApp Business API Cloud support
+- [ ] CRM integrations
+- [ ] Message Tags support (Meta)
+- [ ] Persistent Menu support (Messenger)
+- [ ] Analytics and reporting dashboard
 
 ## Características
 

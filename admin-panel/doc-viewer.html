@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt">
   <head>
     <meta charset="UTF-8" />
@@ -13,8 +13,9 @@
       }
 
       body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          Oxygen, Ubuntu, Cantarell, sans-serif;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
+          Cantarell, sans-serif;
         background: #f5f5f5;
         padding: 20px;
       }
@@ -240,23 +241,31 @@
 
         try {
           console.log("Loading document:", path);
-          console.log("Full URL:", "../" + path);
+
+          // Use relative path - we have a symlink to docs/ in admin-panel/
+          // If path starts with docs/, use it directly
+          // Otherwise, prepend docs/ if it doesn't start with ../
+          let fullPath = path;
+          if (!path.startsWith("docs/") && !path.startsWith("../")) {
+            fullPath = "docs/" + path;
+          }
+          console.log("Full URL:", fullPath);
 
           // Check if marked library is loaded
           if (typeof marked === "undefined") {
             throw new Error(
-              "Biblioteca marked.js não carregou. Verifique a conexão à internet."
+              "Biblioteca marked.js não carregou. Verifique a conexão à internet.",
             );
           }
 
-          const response = await fetch("../" + path);
+          const response = await fetch(fullPath);
 
           console.log("Response status:", response.status);
           console.log("Response headers:", response.headers);
 
           if (!response.ok) {
             throw new Error(
-              "Documento não encontrado (HTTP " + response.status + ")"
+              "Documento não encontrado (HTTP " + response.status + ")",
             );
           }
 
@@ -292,6 +301,12 @@
           console.log("Document rendered successfully!");
         } catch (error) {
           console.error("Error loading document:", error);
+
+          let fullPath = path;
+          if (!path.startsWith("docs/") && !path.startsWith("../")) {
+            fullPath = "docs/" + path;
+          }
+
           content.innerHTML =
             '<div class="error">' +
             "<strong>❌ Erro ao carregar documento</strong><br>" +
@@ -300,8 +315,8 @@
             "Path: " +
             path +
             "<br>" +
-            "Full URL: ../" +
-            path +
+            "Full URL: " +
+            fullPath +
             "<br>" +
             "marked.js: " +
             (typeof marked !== "undefined" ? "loaded" : "NOT loaded") +

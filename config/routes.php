@@ -24,19 +24,19 @@ return function (RouterInterface $router, array $container): void {
         return $controller->check($request);
     });
 
-    // Template endpoints
-    $router->addRoute('GET', '/api/templates', function ($request) use ($container) {
+    // Template endpoints (WhatsApp HSM)
+    $router->addRoute('GET', '/api/whatsapp/hsm/templates', function ($request) use ($container) {
         $controller = $container[TemplateController::class];
         return $controller->getTemplates($request);
     });
 
-    $router->addRoute('GET', '/api/templates/{templateId}', function ($request) use ($container) {
+    $router->addRoute('GET', '/api/whatsapp/hsm/templates/{templateId}', function ($request) use ($container) {
         $controller = $container[TemplateController::class];
         $params = $request->getAttribute('routeParams', []);
         return $controller->getTemplate($request, $params['templateId'] ?? '');
     });
 
-    $router->addRoute('POST', '/api/templates/sync', function ($request) use ($container) {
+    $router->addRoute('POST', '/api/whatsapp/hsm/templates/sync', function ($request) use ($container) {
         $controller = $container[TemplateController::class];
         return $controller->syncTemplates($request);
     });

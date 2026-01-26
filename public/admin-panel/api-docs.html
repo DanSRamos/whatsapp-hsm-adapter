@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt">
   <head>
     <meta charset="UTF-8" />
@@ -13,8 +13,9 @@
       body {
         margin: 0;
         padding: 0;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          Oxygen, Ubuntu, Cantarell, sans-serif;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
+          Cantarell, sans-serif;
       }
 
       .header {
@@ -523,12 +524,11 @@ echo "Message ID: " . $data['data']['messageId'];
     <script>
       // Initialize Swagger UI
       window.onload = function () {
-        // Use absolute path from root - most reliable approach
-        const openapiUrl = "/docs/openapi.yaml";
+        // Use relative path - we have a symlink to docs/ in admin-panel/
+        const openapiUrl = "docs/openapi.yaml";
 
         console.log("Current path:", window.location.pathname);
         console.log("OpenAPI URL:", openapiUrl);
-        console.log("Full URL:", window.location.origin + openapiUrl);
 
         const ui = SwaggerUIBundle({
           url: openapiUrl,

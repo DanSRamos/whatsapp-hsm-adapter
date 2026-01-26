@@ -28,10 +28,10 @@ security:
 tags:
   - name: Health
     description: Health check endpoints
-  - name: Templates
-    description: WhatsApp message template management
   - name: Messages
     description: Send messages across platforms
+  - name: WhatsApp Templates
+    description: WhatsApp HSM template management
   - name: WhatsApp Validation
     description: Validate WhatsApp number availability
   - name: Webhooks
@@ -62,94 +62,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthResponse"
-
-  # Templates
-  /api/templates:
-    get:
-      tags:
-        - Templates
-      summary: Get all templates
-      description: Retrieve all available WhatsApp message templates
-      operationId: getTemplates
-      parameters:
-        - name: provider
-          in: query
-          description: Filter by provider name
-          required: false
-          schema:
-            type: string
-            enum: [infobip, twilio]
-      responses:
-        "200":
-          description: Templates retrieved successfully
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/TemplatesResponse"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "500":
-          $ref: "#/components/responses/InternalError"
-
-  /api/templates/{templateId}:
-    get:
-      tags:
-        - Templates
-      summary: Get template by ID
-      description: Retrieve a specific template by its unique identifier
-      operationId: getTemplateById
-      parameters:
-        - name: templateId
-          in: path
-          description: Template unique identifier
-          required: true
-          schema:
-            type: string
-        - name: provider
-          in: query
-          description: Provider name
-          required: false
-          schema:
-            type: string
-            enum: [infobip, twilio]
-      responses:
-        "200":
-          description: Template found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/TemplateResponse"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-
-  /api/templates/sync:
-    post:
-      tags:
-        - Templates
-      summary: Sync templates
-      description: Manually synchronize templates from provider(s) to local database
-      operationId: syncTemplates
-      parameters:
-        - name: provider
-          in: query
-          description: Sync specific provider (default all)
-          required: false
-          schema:
-            type: string
-            enum: [infobip, twilio]
-      responses:
-        "200":
-          description: Sync completed successfully
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/TemplateSyncResponse"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "500":
-          $ref: "#/components/responses/InternalError"
 
   # Messages
   /api/messages/hsm:
@@ -329,6 +241,94 @@ paths:
                 $ref: "#/components/schemas/MessageStatusResponse"
         "404":
           $ref: "#/components/responses/NotFoundError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  # WhatsApp HSM Templates
+  /api/whatsapp/hsm/templates:
+    get:
+      tags:
+        - WhatsApp Templates
+      summary: Get all WhatsApp HSM templates
+      description: Retrieve all available WhatsApp HSM (Highly Structured Message) templates
+      operationId: getTemplates
+      parameters:
+        - name: provider
+          in: query
+          description: Filter by provider name
+          required: false
+          schema:
+            type: string
+            enum: [infobip, twilio]
+      responses:
+        "200":
+          description: Templates retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TemplatesResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/whatsapp/hsm/templates/{templateId}:
+    get:
+      tags:
+        - WhatsApp Templates
+      summary: Get WhatsApp HSM template by ID
+      description: Retrieve a specific WhatsApp HSM template by its unique identifier
+      operationId: getTemplateById
+      parameters:
+        - name: templateId
+          in: path
+          description: Template unique identifier
+          required: true
+          schema:
+            type: string
+        - name: provider
+          in: query
+          description: Provider name
+          required: false
+          schema:
+            type: string
+            enum: [infobip, twilio]
+      responses:
+        "200":
+          description: Template found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TemplateResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /api/whatsapp/hsm/templates/sync:
+    post:
+      tags:
+        - WhatsApp Templates
+      summary: Sync WhatsApp HSM templates
+      description: Manually synchronize WhatsApp HSM templates from provider(s) to local database
+      operationId: syncTemplates
+      parameters:
+        - name: provider
+          in: query
+          description: Sync specific provider (default all)
+          required: false
+          schema:
+            type: string
+            enum: [infobip, twilio]
+      responses:
+        "200":
+          description: Sync completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TemplateSyncResponse"
         "401":
           $ref: "#/components/responses/UnauthorizedError"
         "500":

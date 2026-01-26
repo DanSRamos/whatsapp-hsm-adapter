@@ -211,11 +211,11 @@ Check the health status of the adapter and its dependencies.
 
 ---
 
-### WhatsApp HSM Templates
+### Templates
 
-#### GET /api/whatsapp/hsm/templates
+#### GET /api/templates
 
-Retrieve all available WhatsApp HSM (Highly Structured Message) templates.
+Retrieve all available WhatsApp message templates.
 
 **Query Parameters:**
 
@@ -255,9 +255,9 @@ Retrieve all available WhatsApp HSM (Highly Structured Message) templates.
 
 ---
 
-#### GET /api/whatsapp/hsm/templates/{templateId}
+#### GET /api/templates/{templateId}
 
-Retrieve a specific WhatsApp HSM template by ID.
+Retrieve a specific template by ID.
 
 **Path Parameters:**
 
@@ -293,9 +293,9 @@ Retrieve a specific WhatsApp HSM template by ID.
 
 ---
 
-#### POST /api/whatsapp/hsm/templates/sync
+#### POST /api/templates/sync
 
-Manually synchronize WhatsApp HSM templates from provider(s) to local database.
+Manually synchronize templates from provider(s) to local database.
 
 **Query Parameters:**
 
@@ -1369,7 +1369,7 @@ const response = await fetch(
       provider: "meta",
       platform: "instagram",
     }),
-  },
+  }
 );
 
 const data = await response.json();
@@ -1494,7 +1494,7 @@ const response = await fetch(
       provider: "meta",
       platform: "messenger",
     }),
-  },
+  }
 );
 
 const data = await response.json();
@@ -1565,7 +1565,7 @@ async function sendMultiPlatform(message) {
       });
 
       return response.json();
-    }),
+    })
   );
 
   return results;
@@ -1813,13 +1813,13 @@ curl -X POST https://your-domain.com/api/whatsapp/check-numbers \
 async function checkWhatsAppNumber(phoneNumber) {
   const response = await fetch(
     `https://your-domain.com/api/whatsapp/check-number?phoneNumber=${encodeURIComponent(
-      phoneNumber,
+      phoneNumber
     )}&provider=infobip`,
     {
       headers: {
         Authorization: "Bearer YOUR_API_KEY",
       },
-    },
+    }
   );
 
   const data = await response.json();
@@ -1962,7 +1962,7 @@ async function filterWhatsAppNumbers(phoneNumbers) {
         phoneNumbers: phoneNumbers,
         provider: "infobip",
       }),
-    },
+    }
   );
 
   const data = await response.json();
@@ -1977,7 +1977,7 @@ async function filterWhatsAppNumbers(phoneNumbers) {
     .map((result) => result.phoneNumber);
 
   console.log(
-    `Found ${whatsappNumbers.length} WhatsApp numbers out of ${phoneNumbers.length}`,
+    `Found ${whatsappNumbers.length} WhatsApp numbers out of ${phoneNumbers.length}`
   );
 
   return whatsappNumbers;
@@ -2025,21 +2025,25 @@ filterWhatsAppNumbers(allNumbers).then((whatsappNumbers) => {
 ### Use Cases for Number Validation
 
 1. **Pre-send Validation**
+
    - Check if number has WhatsApp before sending HSM
    - Avoid wasting HSM template sends on non-WhatsApp numbers
    - Reduce costs by filtering invalid numbers
 
 2. **Contact List Cleaning**
+
    - Batch validate entire contact database
    - Identify which contacts can receive WhatsApp messages
    - Segment contacts by WhatsApp availability
 
 3. **User Onboarding**
+
    - Validate user's phone number during registration
    - Offer WhatsApp as communication channel only if available
    - Provide alternative channels for non-WhatsApp users
 
 4. **Campaign Planning**
+
    - Estimate reach before launching WhatsApp campaign
    - Calculate expected delivery rates
    - Plan fallback strategies for non-WhatsApp numbers
@@ -2054,26 +2058,31 @@ filterWhatsAppNumbers(allNumbers).then((whatsappNumbers) => {
 ### Best Practices
 
 1. **Cache Results**
+
    - Cache validation results for 24-48 hours
    - Reduce API calls and costs
    - Update cache periodically
 
 2. **Handle Uncertain Results**
+
    - For `hasWhatsApp: null`, decide whether to send or skip
    - Consider fallback channels (SMS, email)
    - Log uncertain cases for analysis
 
 3. **Batch Processing**
+
    - Use batch endpoint for multiple numbers
    - Process in chunks of 100 numbers
    - Implement retry logic for failed batches
 
 4. **Error Handling**
+
    - Handle validation errors gracefully
    - Implement fallback to sending without validation
    - Log errors for monitoring
 
 5. **Rate Limiting**
+
    - Respect provider rate limits
    - Implement exponential backoff
    - Use queue for large batches
