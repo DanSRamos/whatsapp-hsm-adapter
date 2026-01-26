@@ -132,6 +132,7 @@ try {
         $templateService,
         $logger
     );
+    $rcsController = new WhatsApp\Adapter\Http\Controllers\RcsController($providerFactory, $logger);
     
     // Create dependency container
     $container = [
@@ -139,6 +140,7 @@ try {
         WhatsApp\Adapter\Http\Controllers\MessageController::class => $messageController,
         WhatsApp\Adapter\Http\Controllers\TemplateController::class => $templateController,
         WhatsApp\Adapter\Http\Controllers\WebhookController::class => $webhookController,
+        WhatsApp\Adapter\Http\Controllers\RcsController::class => $rcsController,
     ];
     
     // Create router

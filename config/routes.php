@@ -6,6 +6,7 @@ use WhatsApp\Adapter\Http\Controllers\HealthController;
 use WhatsApp\Adapter\Http\Controllers\MessageController;
 use WhatsApp\Adapter\Http\Controllers\MetricsController;
 use WhatsApp\Adapter\Http\Controllers\NumberValidationController;
+use WhatsApp\Adapter\Http\Controllers\RcsController;
 use WhatsApp\Adapter\Http\Controllers\TemplateController;
 use WhatsApp\Adapter\Http\Controllers\WebhookController;
 use WhatsApp\Adapter\Http\RouterInterface;
@@ -81,6 +82,32 @@ return function (RouterInterface $router, array $container): void {
     $router->addRoute('POST', '/api/whatsapp/check-numbers', function ($request) use ($container) {
         $controller = $container[NumberValidationController::class];
         return $controller->checkNumbers($request);
+    });
+
+    // RCS endpoints
+    $router->addRoute('POST', '/api/rcs/text', function ($request) use ($container) {
+        $controller = $container[RcsController::class];
+        return $controller->sendText($request);
+    });
+
+    $router->addRoute('POST', '/api/rcs/file', function ($request) use ($container) {
+        $controller = $container[RcsController::class];
+        return $controller->sendFile($request);
+    });
+
+    $router->addRoute('POST', '/api/rcs/card', function ($request) use ($container) {
+        $controller = $container[RcsController::class];
+        return $controller->sendCard($request);
+    });
+
+    $router->addRoute('POST', '/api/rcs/carousel', function ($request) use ($container) {
+        $controller = $container[RcsController::class];
+        return $controller->sendCarousel($request);
+    });
+
+    $router->addRoute('POST', '/api/rcs/suggestions', function ($request) use ($container) {
+        $controller = $container[RcsController::class];
+        return $controller->sendWithSuggestions($request);
     });
 
     // Webhook endpoints

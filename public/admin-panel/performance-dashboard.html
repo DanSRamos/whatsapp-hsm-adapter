@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Performance Dashboard - WhatsApp HSM Adapter</title>
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      .dashboard-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      .dashboard-header {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .dashboard-header h1 {
+        margin: 0 0 10px 0;
+        font-size: 2em;
+      }
+
+      .performance-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+      }
+
+      .performance-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .performance-card h3 {
+        margin: 0 0 15px 0;
+        color: #333;
+        font-size: 1.1em;
+      }
+
+      .stat-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #e5e7eb;
+      }
+
+      .stat-row:last-child {
+        border-bottom: none;
+      }
+
+      .stat-label {
+        color: #6b7280;
+      }
+
+      .stat-value {
+        font-weight: 600;
+        color: #111827;
+      }
+
+      .percentile-bars {
+        margin-top: 15px;
+      }
+
+      .percentile-bar {
+        margin-bottom: 10px;
+      }
+
+      .percentile-label {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 5px;
+        font-size: 0.9em;
+      }
+
+      .bar-container {
+        height: 8px;
+        background: #e5e7eb;
+        border-radius: 4px;
+        overflow: hidden;
+      }
+
+      .bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+        transition: width 0.3s ease;
+      }
+
+      .circuit-breaker-status {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 15px;
+        background: #f9fafb;
+        border-radius: 8px;
+        margin-bottom: 15px;
+      }
+
+      .cb-indicator {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5em;
+        font-weight: bold;
+      }
+
+      .cb-closed {
+        background: #d1fae5;
+        color: #065f46;
+      }
+
+      .cb-open {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+
+      .cb-half-open {
+        background: #fef3c7;
+        color: #92400e;
+      }
+
+      .cb-info {
+        flex: 1;
+      }
+
+      .cb-service {
+        font-weight: 600;
+        margin-bottom: 5px;
+      }
+
+      .cb-details {
+        font-size: 0.9em;
+        color: #6b7280;
+      }
+
+      .rate-limit-gauge {
+        position: relative;
+        height: 150px;
+        margin: 20px 0;
+      }
+
+      .gauge-bg {
+        width: 100%;
+        height: 100%;
+        background: #e5e7eb;
+        border-radius: 10px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .gauge-fill {
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          #10b981 0%,
+          #f59e0b 50%,
+          #ef4444 100%
+        );
+        transition: width 0.3s ease;
+      }
+
+      .gauge-label {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 2em;
+        font-weight: bold;
+        color: #111827;
+      }
+
+      .alert-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .alert-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px;
+        border-bottom: 1px solid #e5e7eb;
+      }
+
+      .alert-item:last-child {
+        border-bottom: none;
+      }
+
+      .alert-badge {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.75em;
+        font-weight: 600;
+      }
+
+      .alert-critical {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+
+      .alert-error {
+        background: #fef3c7;
+        color: #92400e;
+      }
+
+      .alert-warning {
+        background: #fef3c7;
+        color: #92400e;
+      }
+
+      .alert-info {
+        background: #dbeafe;
+        color: #1e40af;
+      }
+
+      .refresh-btn {
+        background: #f59e0b;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: background 0.2s;
+        margin-bottom: 20px;
+      }
+
+      .refresh-btn:hover {
+        background: #d97706;
+      }
+    </style>
+  </head>
+  <body>
+    <script src="header.js"></script>
+
+    <div class="dashboard-container">
+      <div class="dashboard-header">
+        <h1>⚡ Performance Dashboard</h1>
+        <p>Monitoramento de performance e saúde do sistema</p>
+      </div>
+
+      <button class="refresh-btn" onclick="refreshDashboard()">
+        🔄 Atualizar
+      </button>
+
+      <div class="performance-grid">
+        <!-- Tempo de Resposta -->
+        <div class="performance-card">
+          <h3>⚡ Tempo de Resposta - Instagram</h3>
+          <div class="stat-row">
+            <span class="stat-label">Média</span>
+            <span class="stat-value" id="ig-avg">--</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Mínimo</span>
+            <span class="stat-value" id="ig-min">--</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Máximo</span>
+            <span class="stat-value" id="ig-max">--</span>
+          </div>
+          <div class="percentile-bars">
+            <div class="percentile-bar">
+              <div class="percentile-label">
+                <span>P50 (Mediana)</span>
+                <span id="ig-p50">--</span>
+              </div>
+              <div class="bar-container">
+                <div class="bar-fill" id="ig-p50-bar" style="width: 0%"></div>
+              </div>
+            </div>
+            <div class="percentile-bar">
+              <div class="percentile-label">
+                <span>P95</span>
+                <span id="ig-p95">--</span>
+              </div>
+              <div class="bar-container">
+                <div class="bar-fill" id="ig-p95-bar" style="width: 0%"></div>
+              </div>
+            </div>
+            <div class="percentile-bar">
+              <div class="percentile-label">
+                <span>P99</span>
+                <span id="ig-p99">--</span>
+              </div>
+              <div class="bar-container">
+                <div class="bar-fill" id="ig-p99-bar" style="width: 0%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tempo de Resposta Messenger -->
+        <div class="performance-card">
+          <h3>⚡ Tempo de Resposta - Messenger</h3>
+          <div class="stat-row">
+            <span class="stat-label">Média</span>
+            <span class="stat-value" id="msg-avg">--</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Mínimo</span>
+            <span class="stat-value" id="msg-min">--</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Máximo</span>
+            <span class="stat-value" id="msg-max">--</span>
+          </div>
+          <div class="percentile-bars">
+            <div class="percentile-bar">
+              <div class="percentile-label">
+                <span>P50 (Mediana)</span>
+                <span id="msg-p50">--</span>
+              </div>
+              <div class="bar-container">
+                <div class="bar-fill" id="msg-p50-bar" style="width: 0%"></div>
+              </div>
+            </div>
+            <div class="percentile-bar">
+              <div class="percentile-label">
+                <span>P95</span>
+                <span id="msg-p95">--</span>
+              </div>
+              <div class="bar-container">
+                <div class="bar-fill" id="msg-p95-bar" style="width: 0%"></div>
+              </div>
+            </div>
+            <div class="percentile-bar">
+              <div class="percentile-label">
+                <span>P99</span>
+                <span id="msg-p99">--</span>
+              </div>
+              <div class="bar-container">
+                <div class="bar-fill" id="msg-p99-bar" style="width: 0%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Circuit Breaker Status -->
+      <div class="performance-card">
+        <h3>🔌 Circuit Breaker Status</h3>
+        <div id="circuit-breaker-list">
+          <p>Carregando...</p>
+        </div>
+      </div>
+
+      <!-- Rate Limiting -->
+      <div class="performance-card">
+        <h3>🚦 Rate Limiting</h3>
+        <div>
+          <h4>Uso por Hora</h4>
+          <div class="rate-limit-gauge">
+            <div class="gauge-bg">
+              <div class="gauge-fill" id="hourly-gauge" style="width: 0%"></div>
+            </div>
+            <div class="gauge-label" id="hourly-label">0%</div>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Usado</span>
+            <span class="stat-value" id="hourly-used">--</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Limite</span>
+            <span class="stat-value" id="hourly-limit">--</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Restante</span>
+            <span class="stat-value" id="hourly-remaining">--</span>
+          </div>
+        </div>
+        <div style="margin-top: 20px">
+          <h4>Uso Diário</h4>
+          <div class="rate-limit-gauge">
+            <div class="gauge-bg">
+              <div class="gauge-fill" id="daily-gauge" style="width: 0%"></div>
+            </div>
+            <div class="gauge-label" id="daily-label">0%</div>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Usado</span>
+            <span class="stat-value" id="daily-used">--</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Limite</span>
+            <span class="stat-value" id="daily-limit">--</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Restante</span>
+            <span class="stat-value" id="daily-remaining">--</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Alertas Recentes -->
+      <div class="performance-card">
+        <h3>🚨 Alertas Recentes (Última Hora)</h3>
+        <ul class="alert-list" id="alert-list">
+          <li class="alert-item">Carregando...</li>
+        </ul>
+      </div>
+    </div>
+
+    <script>
+      async function loadPerformanceMetrics() {
+        try {
+          // Carregar tempo de resposta
+          const responseTimeRes = await fetch("/metrics/meta/response-time");
+          const responseTimeData = await responseTimeRes.json();
+
+          if (responseTimeData.success) {
+            updateResponseTime(responseTimeData.data);
+          }
+
+          // Carregar circuit breaker status
+          const cbRes = await fetch(
+            "/metrics/meta/circuit-breaker?service=meta_api"
+          );
+          const cbData = await cbRes.json();
+
+          if (cbData.success) {
+            updateCircuitBreaker(cbData.data);
+          }
+
+          // Carregar alertas
+          const alertsRes = await fetch("/metrics/meta/alerts?hours=1");
+          const alertsData = await alertsRes.json();
+
+          if (alertsData.success) {
+            updateAlerts(alertsData.data);
+          }
+
+          // Note: Rate limit requires token, so we'll skip it for now
+          // In production, you'd need to provide the token
+        } catch (error) {
+          console.error("Error loading performance metrics:", error);
+        }
+      }
+
+      function updateResponseTime(data) {
+        // Instagram
+        const ig = data.instagram || {};
+        document.getElementById("ig-avg").textContent =
+          (ig.average_ms || 0).toFixed(0) + "ms";
+        document.getElementById("ig-min").textContent = (ig.min_ms || 0) + "ms";
+        document.getElementById("ig-max").textContent = (ig.max_ms || 0) + "ms";
+        document.getElementById("ig-p50").textContent = (ig.p50_ms || 0) + "ms";
+        document.getElementById("ig-p95").textContent = (ig.p95_ms || 0) + "ms";
+        document.getElementById("ig-p99").textContent = (ig.p99_ms || 0) + "ms";
+
+        // Calcular percentagens para barras (assumindo max de 2000ms)
+        const maxMs = 2000;
+        document.getElementById("ig-p50-bar").style.width =
+          Math.min(100, (ig.p50_ms / maxMs) * 100) + "%";
+        document.getElementById("ig-p95-bar").style.width =
+          Math.min(100, (ig.p95_ms / maxMs) * 100) + "%";
+        document.getElementById("ig-p99-bar").style.width =
+          Math.min(100, (ig.p99_ms / maxMs) * 100) + "%";
+
+        // Messenger
+        const msg = data.messenger || {};
+        document.getElementById("msg-avg").textContent =
+          (msg.average_ms || 0).toFixed(0) + "ms";
+        document.getElementById("msg-min").textContent =
+          (msg.min_ms || 0) + "ms";
+        document.getElementById("msg-max").textContent =
+          (msg.max_ms || 0) + "ms";
+        document.getElementById("msg-p50").textContent =
+          (msg.p50_ms || 0) + "ms";
+        document.getElementById("msg-p95").textContent =
+          (msg.p95_ms || 0) + "ms";
+        document.getElementById("msg-p99").textContent =
+          (msg.p99_ms || 0) + "ms";
+
+        document.getElementById("msg-p50-bar").style.width =
+          Math.min(100, (msg.p50_ms / maxMs) * 100) + "%";
+        document.getElementById("msg-p95-bar").style.width =
+          Math.min(100, (msg.p95_ms / maxMs) * 100) + "%";
+        document.getElementById("msg-p99-bar").style.width =
+          Math.min(100, (msg.p99_ms / maxMs) * 100) + "%";
+      }
+
+      function updateCircuitBreaker(data) {
+        const container = document.getElementById("circuit-breaker-list");
+        const state = data.state || "unknown";
+        const stateClass =
+          state === "closed"
+            ? "cb-closed"
+            : state === "open"
+            ? "cb-open"
+            : "cb-half-open";
+        const stateEmoji =
+          state === "closed" ? "✅" : state === "open" ? "❌" : "⚠️";
+        const stateText =
+          state === "closed"
+            ? "CLOSED"
+            : state === "open"
+            ? "OPEN"
+            : "HALF-OPEN";
+
+        container.innerHTML = `
+                <div class="circuit-breaker-status">
+                    <div class="cb-indicator ${stateClass}">
+                        ${stateEmoji}
+                    </div>
+                    <div class="cb-info">
+                        <div class="cb-service">${
+                          data.service || "meta_api"
+                        }</div>
+                        <div class="cb-details">
+                            Estado: ${stateText} | 
+                            Falhas: ${data.failures || 0} / ${
+          data.failure_threshold || 5
+        } | 
+                            Sucessos: ${data.successes || 0} / ${
+          data.success_threshold || 2
+        }
+                        </div>
+                    </div>
+                </div>
+            `;
+      }
+
+      function updateAlerts(data) {
+        const alertList = document.getElementById("alert-list");
+        alertList.innerHTML = "";
+
+        const total = data.total || 0;
+        if (total === 0) {
+          alertList.innerHTML =
+            '<li class="alert-item">Nenhum alerta na última hora</li>';
+          return;
+        }
+
+        const byType = data.by_type || {};
+        for (const [type, count] of Object.entries(byType)) {
+          if (count > 0) {
+            const li = document.createElement("li");
+            li.className = "alert-item";
+            li.innerHTML = `
+                        <span class="alert-badge alert-warning">${type}</span>
+                        <span>${count} alertas</span>
+                    `;
+            alertList.appendChild(li);
+          }
+        }
+      }
+
+      function refreshDashboard() {
+        loadPerformanceMetrics();
+      }
+
+      // Auto-refresh a cada 30 segundos
+      setInterval(refreshDashboard, 30000);
+
+      // Carregar métricas ao iniciar
+      loadPerformanceMetrics();
+    </script>
+  </body>
+</html>

@@ -174,6 +174,38 @@ return [
                 'base_url' => 'https://graph.facebook.com',
             ],
         ],
+
+        /*
+        |--------------------------------------------------------------------------
+        | Infobip RCS Provider
+        |--------------------------------------------------------------------------
+        |
+        | Rich Communication Services (RCS) provider through Infobip.
+        | Supports rich cards, carousels, suggested actions, and file sharing.
+        |
+        */
+        'infobip-rcs' => [
+            'enabled' => true,
+            'type' => 'rcs',
+            'class' => \WhatsApp\Adapter\Providers\Infobip\InfobipRcsProvider::class,
+            'config' => [
+                'api_key' => env('INFOBIP_API_KEY'),
+                'base_url' => env('INFOBIP_BASE_URL', 'https://api.infobip.com'),
+                'sender' => env('INFOBIP_RCS_SENDER', env('INFOBIP_SENDER')),
+                'webhook_secret' => env('INFOBIP_WEBHOOK_SECRET'),
+            ],
+            'features' => [
+                'text_messages' => true,
+                'file_messages' => true,
+                'rich_cards' => true,
+                'carousels' => true,
+                'suggested_actions' => true,
+                'suggested_replies' => true,
+                'delivery_reports' => true,
+                'read_receipts' => true,
+                'hsm_templates' => false, // RCS doesn't use templates
+            ],
+        ],
     ],
 
     /*

@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="pt">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Alertas e Monitoramento - Admin Panel</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="header.js"></script>
+  </head>
+  <body data-page="monitoring">
+    <div class="container">
+      <div class="monitoring-content">
+        <h1>📊 Alertas e Monitoramento</h1>
+
+        <div class="monitoring-grid">
+          <!-- Rate Limit Status -->
+          <div class="monitoring-card">
+            <div class="card-header">
+              <h2>⏱️ Rate Limit Status</h2>
+              <button onclick="refreshRateLimits()" class="refresh-btn-small">
+                🔄
+              </button>
+            </div>
+            <div id="rate-limit-content" class="card-content">
+              <div class="loading-small">Carregando...</div>
+            </div>
+          </div>
+
+          <!-- Circuit Breaker Status -->
+          <div class="monitoring-card">
+            <div class="card-header">
+              <h2>🔌 Circuit Breaker</h2>
+              <button
+                onclick="refreshCircuitBreaker()"
+                class="refresh-btn-small"
+              >
+                🔄
+              </button>
+            </div>
+            <div id="circuit-breaker-content" class="card-content">
+              <div class="loading-small">Carregando...</div>
+            </div>
+          </div>
+
+          <!-- Alert Statistics -->
+          <div class="monitoring-card full-width">
+            <div class="card-header">
+              <h2>🚨 Estatísticas de Alertas (Últimas 24h)</h2>
+              <button onclick="refreshAlertStats()" class="refresh-btn-small">
+                🔄
+              </button>
+            </div>
+            <div id="alert-stats-content" class="card-content">
+              <div class="loading-small">Carregando...</div>
+            </div>
+          </div>
+
+          <!-- Recent Alerts -->
+          <div class="monitoring-card full-width">
+            <div class="card-header">
+              <h2>📋 Alertas Recentes</h2>
+              <div style="display: flex; gap: 10px">
+                <select
+                  id="alert-severity-filter"
+                  onchange="filterAlerts()"
+                  class="filter-select"
+                >
+                  <option value="all">Todas as Severidades</option>
+                  <option value="critical">Critical</option>
+                  <option value="error">Error</option>
+                  <option value="warning">Warning</option>
+                  <option value="info">Info</option>
+                </select>
+                <button onclick="refreshAlerts()" class="refresh-btn-small">
+                  🔄
+                </button>
+              </div>
+            </div>
+            <div id="alerts-content" class="card-content">
+              <div class="loading-small">Carregando...</div>
+            </div>
+          </div>
+
+          <!-- System Health -->
+          <div class="monitoring-card">
+            <div class="card-header">
+              <h2>💚 System Health</h2>
+              <button onclick="refreshSystemHealth()" class="refresh-btn-small">
+                🔄
+              </button>
+            </div>
+            <div id="system-health-content" class="card-content">
+              <div class="loading-small">Carregando...</div>
+            </div>
+          </div>
+
+          <!-- Performance Metrics -->
+          <div class="monitoring-card">
+            <div class="card-header">
+              <h2>📈 Performance Metrics</h2>
+              <button onclick="refreshPerformance()" class="refresh-btn-small">
+                🔄
+              </button>
+            </div>
+            <div id="performance-content" class="card-content">
+              <div class="loading-small">Carregando...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions Panel -->
+        <div class="actions-panel">
+          <h2>⚙️ Ações de Administração</h2>
+          <div class="action-buttons">
+            <button onclick="resetRateLimits()" class="action-btn warning">
+              🔄 Resetar Rate Limits
+            </button>
+            <button onclick="resetCircuitBreaker()" class="action-btn warning">
+              🔌 Resetar Circuit Breaker
+            </button>
+            <button onclick="clearAlerts()" class="action-btn danger">
+              🗑️ Limpar Alertas
+            </button>
+            <button onclick="exportLogs()" class="action-btn">
+              📥 Exportar Logs
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const API_BASE = "api.php";
+      let allAlerts = [];
+
+      // Auto-refresh every 30 seconds
+      setInterval(() => {
+        refreshAll();
+      }, 30000);
+
+      // Load data on page load
+      document.addEventListener("DOMContentLoaded", () => {
+        refreshAll();
+      });
+
+      function refreshAll() {
+        refreshRateLimits();
+        refreshCircuitBreaker();
+        refreshAlertStats();
+        refreshAlerts();
+        refreshSystemHealth();
+        refreshPerformance();
+      }
+
+      async function refreshRateLimits() {
+        const container = document.getElementById("rate-limit-content");
+
+        try {
+          const response = await fetch(`${API_BASE}?action=get_rate_limits`);
+          const data = await response.json();
+
+          if (data.success) {
+            const limits = data.data;
+            container.innerHTML = `
+                        <div class="metric-row">
+                            <div class="metric">
+                                <div class="metric-label">Hourly Usage</div>
+                                <div class="metric-value">${
+                                  limits.hourly.used
+                                }/${limits.hourly.limit}</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill ${getProgressClass(
+                                      limits.hourly.percentage
+                                    )}" 
+                                         style="width: ${
+                                           limits.hourly.percentage
+                                         }%"></div>
+                                </div>
+                                <div class="metric-detail">${
+                                  limits.hourly.remaining
+                                } remaining (${limits.hourly.percentage.toFixed(
+              1
+            )}%)</div>
+                            </div>
+                        </div>
+                        <div class="metric-row">
+                            <div class="metric">
+                                <div class="metric-label">Daily Usage</div>
+                                <div class="metric-value">${
+                                  limits.daily.used
+                                }/${limits.daily.limit}</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill ${getProgressClass(
+                                      limits.daily.percentage
+                                    )}" 
+                                         style="width: ${
+                                           limits.daily.percentage
+                                         }%"></div>
+                                </div>
+                                <div class="metric-detail">${
+                                  limits.daily.remaining
+                                } remaining (${limits.daily.percentage.toFixed(
+              1
+            )}%)</div>
+                            </div>
+                        </div>
+                    `;
+          } else {
+            container.innerHTML = `<div class="error-message">Erro ao carregar rate limits</div>`;
+          }
+        } catch (error) {
+          container.innerHTML = `<div class="error-message">Erro: ${error.message}</div>`;
+        }
+      }
+
+      async function refreshCircuitBreaker() {
+        const container = document.getElementById("circuit-breaker-content");
+
+        try {
+          const response = await fetch(
+            `${API_BASE}?action=get_circuit_breaker_status`
+          );
+          const data = await response.json();
+
+          if (data.success) {
+            const cb = data.data;
+            const stateClass =
+              cb.state === "closed"
+                ? "state-good"
+                : cb.state === "open"
+                ? "state-bad"
+                : "state-warning";
+            const stateIcon =
+              cb.state === "closed" ? "✅" : cb.state === "open" ? "❌" : "⚠️";
+
+            container.innerHTML = `
+                        <div class="state-indicator ${stateClass}">
+                            ${stateIcon} ${cb.state.toUpperCase()}
+                        </div>
+                        <div class="metric-row">
+                            <div class="metric-item">
+                                <span class="metric-label">Failures:</span>
+                                <span class="metric-value">${cb.failures}/${
+              cb.failure_threshold
+            }</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Successes:</span>
+                                <span class="metric-value">${cb.successes}/${
+              cb.success_threshold
+            }</span>
+                            </div>
+                        </div>
+                        ${
+                          cb.opened_at
+                            ? `
+                            <div class="metric-detail">
+                                Opened at: ${cb.opened_at}<br>
+                                Elapsed: ${cb.elapsed_seconds}s / ${
+                                cb.elapsed_seconds + cb.remaining_seconds
+                              }s
+                            </div>
+                        `
+                            : ""
+                        }
+                    `;
+          } else {
+            container.innerHTML = `<div class="error-message">Erro ao carregar circuit breaker status</div>`;
+          }
+        } catch (error) {
+          container.innerHTML = `<div class="error-message">Erro: ${error.message}</div>`;
+        }
+      }
+
+      async function refreshAlertStats() {
+        const container = document.getElementById("alert-stats-content");
+
+        try {
+          const response = await fetch(`${API_BASE}?action=get_alert_stats`);
+          const data = await response.json();
+
+          if (data.success) {
+            const stats = data.data;
+
+            container.innerHTML = `
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-number">${stats.total}</div>
+                                <div class="stat-label">Total Alerts</div>
+                            </div>
+                            <div class="stat-card critical">
+                                <div class="stat-number">${
+                                  stats.by_severity.critical || 0
+                                }</div>
+                                <div class="stat-label">Critical</div>
+                            </div>
+                            <div class="stat-card error">
+                                <div class="stat-number">${
+                                  stats.by_severity.error || 0
+                                }</div>
+                                <div class="stat-label">Errors</div>
+                            </div>
+                            <div class="stat-card warning">
+                                <div class="stat-number">${
+                                  stats.by_severity.warning || 0
+                                }</div>
+                                <div class="stat-label">Warnings</div>
+                            </div>
+                            <div class="stat-card info">
+                                <div class="stat-number">${
+                                  stats.by_severity.info || 0
+                                }</div>
+                                <div class="stat-label">Info</div>
+                            </div>
+                        </div>
+                        <div class="alert-types">
+                            <h3>Por Tipo:</h3>
+                            <div class="type-list">
+                                ${Object.entries(stats.by_type)
+                                  .map(
+                                    ([type, count]) => `
+                                    <div class="type-item">
+                                        <span class="type-name">${formatAlertType(
+                                          type
+                                        )}</span>
+                                        <span class="type-count">${count}</span>
+                                    </div>
+                                `
+                                  )
+                                  .join("")}
+                            </div>
+                        </div>
+                    `;
+          } else {
+            container.innerHTML = `<div class="error-message">Erro ao carregar estatísticas</div>`;
+          }
+        } catch (error) {
+          container.innerHTML = `<div class="error-message">Erro: ${error.message}</div>`;
+        }
+      }
+
+      async function refreshAlerts() {
+        const container = document.getElementById("alerts-content");
+
+        try {
+          const response = await fetch(`${API_BASE}?action=get_recent_alerts`);
+          const data = await response.json();
+
+          if (data.success) {
+            allAlerts = data.data;
+            filterAlerts();
+          } else {
+            container.innerHTML = `<div class="error-message">Erro ao carregar alertas</div>`;
+          }
+        } catch (error) {
+          container.innerHTML = `<div class="error-message">Erro: ${error.message}</div>`;
+        }
+      }
+
+      function filterAlerts() {
+        const container = document.getElementById("alerts-content");
+        const filter = document.getElementById("alert-severity-filter").value;
+
+        let filtered = allAlerts;
+        if (filter !== "all") {
+          filtered = allAlerts.filter((alert) => alert.severity === filter);
+        }
+
+        if (filtered.length === 0) {
+          container.innerHTML = `<div class="empty-state">Nenhum alerta encontrado</div>`;
+          return;
+        }
+
+        container.innerHTML = filtered
+          .map(
+            (alert) => `
+                <div class="alert-item ${alert.severity}">
+                    <div class="alert-header">
+                        <span class="alert-type">${formatAlertType(
+                          alert.type
+                        )}</span>
+                        <span class="alert-time">${alert.timestamp}</span>
+                    </div>
+                    <div class="alert-message">${alert.message}</div>
+                    ${
+                      alert.context
+                        ? `<div class="alert-context">${JSON.stringify(
+                            alert.context,
+                            null,
+                            2
+                          )}</div>`
+                        : ""
+                    }
+                </div>
+            `
+          )
+          .join("");
+      }
+
+      async function refreshSystemHealth() {
+        const container = document.getElementById("system-health-content");
+
+        try {
+          const response = await fetch(`${API_BASE}?action=health`);
+          const data = await response.json();
+
+          if (data.success) {
+            const health = data.data;
+            container.innerHTML = `
+                        <div class="health-status ${
+                          health.status === "healthy"
+                            ? "status-good"
+                            : "status-bad"
+                        }">
+                            ${
+                              health.status === "healthy"
+                                ? "✅ Healthy"
+                                : "❌ Unhealthy"
+                            }
+                        </div>
+                        <div class="health-checks">
+                            ${Object.entries(health.checks)
+                              .map(
+                                ([check, status]) => `
+                                <div class="health-check">
+                                    <span>${status ? "✅" : "❌"}</span>
+                                    <span>${check}</span>
+                                </div>
+                            `
+                              )
+                              .join("")}
+                        </div>
+                    `;
+          } else {
+            container.innerHTML = `<div class="error-message">Erro ao carregar system health</div>`;
+          }
+        } catch (error) {
+          container.innerHTML = `<div class="error-message">Erro: ${error.message}</div>`;
+        }
+      }
+
+      async function refreshPerformance() {
+        const container = document.getElementById("performance-content");
+
+        try {
+          const response = await fetch(
+            `${API_BASE}?action=get_performance_metrics`
+          );
+          const data = await response.json();
+
+          if (data.success) {
+            const metrics = data.data;
+            container.innerHTML = `
+                        <div class="metric-row">
+                            <div class="metric-item">
+                                <span class="metric-label">Avg Response Time:</span>
+                                <span class="metric-value">${
+                                  metrics.avg_response_time
+                                }ms</span>
+                            </div>
+                        </div>
+                        <div class="metric-row">
+                            <div class="metric-item">
+                                <span class="metric-label">Success Rate:</span>
+                                <span class="metric-value ${
+                                  metrics.success_rate >= 95 ? "good" : "bad"
+                                }">${metrics.success_rate}%</span>
+                            </div>
+                        </div>
+                        <div class="metric-row">
+                            <div class="metric-item">
+                                <span class="metric-label">Error Rate:</span>
+                                <span class="metric-value ${
+                                  metrics.error_rate <= 5 ? "good" : "bad"
+                                }">${metrics.error_rate}%</span>
+                            </div>
+                        </div>
+                    `;
+          } else {
+            container.innerHTML = `<div class="error-message">Erro ao carregar métricas</div>`;
+          }
+        } catch (error) {
+          container.innerHTML = `<div class="error-message">Erro: ${error.message}</div>`;
+        }
+      }
+
+      // Helper functions
+      function getProgressClass(percentage) {
+        if (percentage >= 90) return "progress-danger";
+        if (percentage >= 75) return "progress-warning";
+        return "progress-good";
+      }
+
+      function formatAlertType(type) {
+        const types = {
+          api_error: "🔴 API Error",
+          webhook_failure: "📡 Webhook Failure",
+          rate_limit: "⏱️ Rate Limit",
+          circuit_breaker: "🔌 Circuit Breaker",
+          performance: "📈 Performance",
+          token_expiring: "🔑 Token Expiring",
+        };
+        return types[type] || type;
+      }
+
+      // Action functions
+      async function resetRateLimits() {
+        if (!confirm("Tem certeza que deseja resetar os rate limits?")) return;
+
+        try {
+          const response = await fetch(`${API_BASE}?action=reset_rate_limits`, {
+            method: "POST",
+          });
+          const data = await response.json();
+
+          if (data.success) {
+            alert("Rate limits resetados com sucesso!");
+            refreshRateLimits();
+          } else {
+            alert("Erro ao resetar rate limits: " + data.error);
+          }
+        } catch (error) {
+          alert("Erro: " + error.message);
+        }
+      }
+
+      async function resetCircuitBreaker() {
+        if (!confirm("Tem certeza que deseja resetar o circuit breaker?"))
+          return;
+
+        try {
+          const response = await fetch(
+            `${API_BASE}?action=reset_circuit_breaker`,
+            { method: "POST" }
+          );
+          const data = await response.json();
+
+          if (data.success) {
+            alert("Circuit breaker resetado com sucesso!");
+            refreshCircuitBreaker();
+          } else {
+            alert("Erro ao resetar circuit breaker: " + data.error);
+          }
+        } catch (error) {
+          alert("Erro: " + error.message);
+        }
+      }
+
+      async function clearAlerts() {
+        if (!confirm("Tem certeza que deseja limpar todos os alertas?")) return;
+
+        try {
+          const response = await fetch(`${API_BASE}?action=clear_alerts`, {
+            method: "POST",
+          });
+          const data = await response.json();
+
+          if (data.success) {
+            alert("Alertas limpos com sucesso!");
+            refreshAlerts();
+            refreshAlertStats();
+          } else {
+            alert("Erro ao limpar alertas: " + data.error);
+          }
+        } catch (error) {
+          alert("Erro: " + error.message);
+        }
+      }
+
+      async function exportLogs() {
+        try {
+          const response = await fetch(`${API_BASE}?action=export_logs`);
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `logs_${new Date().toISOString()}.json`;
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
+          document.body.removeChild(a);
+        } catch (error) {
+          alert("Erro ao exportar logs: " + error.message);
+        }
+      }
+    </script>
+  </body>
+</html>

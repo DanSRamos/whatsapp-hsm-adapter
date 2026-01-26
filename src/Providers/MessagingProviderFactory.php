@@ -8,6 +8,7 @@ use GuzzleHttp\ClientInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 use WhatsApp\Adapter\Providers\Infobip\InfobipProvider;
+use WhatsApp\Adapter\Providers\Infobip\InfobipRcsProvider;
 use WhatsApp\Adapter\Providers\Meta\MetaProvider;
 use WhatsApp\Adapter\Providers\Twilio\TwilioProvider;
 
@@ -65,12 +66,17 @@ class MessagingProviderFactory
         return match($providerName) {
             'infobip' => new InfobipProvider(
                 $this->httpClient,
-                $providerConfig,
+                $providerConfig['config'] ?? $providerConfig,
+                $this->logger
+            ),
+            'infobip-rcs' => new InfobipRcsProvider(
+                $this->httpClient,
+                $providerConfig['config'] ?? $providerConfig,
                 $this->logger
             ),
             'twilio' => new TwilioProvider(
                 $this->httpClient,
-                $providerConfig,
+                $providerConfig['config'] ?? $providerConfig,
                 $this->logger
             ),
             'instagram', 'meta', 'messenger' => $this->createMetaProvider($providerConfig),

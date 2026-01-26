@@ -1,0 +1,2082 @@
+openapi: 3.0.3
+info:
+  title: Multi-Platform Messaging Adapter API
+  description: |
+    RESTful API for sending and managing messages across multiple platforms:
+    - **WhatsApp** (via Infobip, Twilio)
+    - **Instagram** (via Meta Messenger Platform API)
+    - **Facebook Messenger** (via Meta Messenger Platform API)
+
+    This API provides unified endpoints for messaging, template management, webhooks, and monitoring.
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@your-domain.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://your-domain.com
+    description: Production server
+  - url: http://localhost:8000
+    description: Development server
+
+security:
+  - BearerAuth: []
+
+tags:
+  - name: Health
+    description: Health check endpoints
+  - name: Templates
+    description: WhatsApp message template management
+  - name: Messages
+    description: Send messages across platforms
+  - name: WhatsApp Validation
+    description: Validate WhatsApp number availability
+  - name: Webhooks
+    description: Receive notifications from providers
+  - name: Metrics
+    description: Monitoring and metrics endpoints
+
+paths:
+  # Health Check
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Check service health
+      description: Verify the health status of the adapter and its dependencies (database, Redis, providers)
+      operationId: healthCheck
+      security: []
+      responses:
+        "200":
+          description: All systems healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+        "503":
+          description: One or more systems unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+  # Templates
+  /api/templates:
+    get:
+      tags:
+        - Templates
+      summary: Get all templates
+      description: Retrieve all available WhatsApp message templates
+      operationId: getTemplates
+      parameters:
+        - name: provider
+          in: query
+          description: Filter by provider name
+          required: false
+          schema:
+            type: string
+            enum: [infobip, twilio]
+      responses:
+        "200":
+          description: Templates retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TemplatesResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/templates/{templateId}:
+    get:
+      tags:
+        - Templates
+      summary: Get template by ID
+      description: Retrieve a specific template by its unique identifier
+      operationId: getTemplateById
+      parameters:
+        - name: templateId
+          in: path
+          description: Template unique identifier
+          required: true
+          schema:
+            type: string
+        - name: provider
+          in: query
+          description: Provider name
+          required: false
+          schema:
+            type: string
+            enum: [infobip, twilio]
+      responses:
+        "200":
+          description: Template found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TemplateResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /api/templates/sync:
+    post:
+      tags:
+        - Templates
+      summary: Sync templates
+      description: Manually synchronize templates from provider(s) to local database
+      operationId: syncTemplates
+      parameters:
+        - name: provider
+          in: query
+          description: Sync specific provider (default all)
+          required: false
+          schema:
+            type: string
+            enum: [infobip, twilio]
+      responses:
+        "200":
+          description: Sync completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TemplateSyncResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  # Messages
+  /api/messages/hsm:
+    post:
+      tags:
+        - Messages
+      summary: Send HSM message
+      description: Send a Highly Structured Message using an approved template (WhatsApp only)
+      operationId: sendHSM
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HSMRequest"
+      responses:
+        "200":
+          description: Message sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "429":
+          $ref: "#/components/responses/RateLimitError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/messages/text:
+    post:
+      tags:
+        - Messages
+      summary: Send text message
+      description: Send a free-form text message (WhatsApp, Instagram, Messenger)
+      operationId: sendText
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TextRequest"
+      responses:
+        "200":
+          description: Message sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          $ref: "#/components/responses/ForbiddenError"
+        "429":
+          $ref: "#/components/responses/RateLimitError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/messages/media:
+    post:
+      tags:
+        - Messages
+      summary: Send media message
+      description: Send media (image, document, audio, or video)
+      operationId: sendMedia
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MediaRequest"
+      responses:
+        "200":
+          description: Media sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "429":
+          $ref: "#/components/responses/RateLimitError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/messages/interactive/buttons:
+    post:
+      tags:
+        - Messages
+      summary: Send interactive buttons
+      description: Send an interactive message with buttons (max 3 buttons for WhatsApp, max 13 for Meta)
+      operationId: sendInteractiveButtons
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InteractiveButtonsRequest"
+      responses:
+        "200":
+          description: Message sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "429":
+          $ref: "#/components/responses/RateLimitError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/messages/interactive/list:
+    post:
+      tags:
+        - Messages
+      summary: Send interactive list
+      description: Send an interactive message with a list (max 10 items)
+      operationId: sendInteractiveList
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InteractiveListRequest"
+      responses:
+        "200":
+          description: Message sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "429":
+          $ref: "#/components/responses/RateLimitError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/messages/{messageId}/status:
+    get:
+      tags:
+        - Messages
+      summary: Get message status
+      description: Query the status of a sent message
+      operationId: getMessageStatus
+      parameters:
+        - name: messageId
+          in: path
+          description: Message unique identifier
+          required: true
+          schema:
+            type: string
+        - name: provider
+          in: query
+          description: Provider name
+          required: false
+          schema:
+            type: string
+            enum: [infobip, twilio, meta]
+      responses:
+        "200":
+          description: Status retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageStatusResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  # WhatsApp Number Validation
+  /api/whatsapp/check-number:
+    get:
+      tags:
+        - WhatsApp Validation
+      summary: Check single number
+      description: Check if a phone number has WhatsApp before sending a message
+      operationId: checkWhatsAppNumber
+      parameters:
+        - name: phoneNumber
+          in: query
+          description: Phone number in E.164 format (e.g., +351912345678)
+          required: true
+          schema:
+            type: string
+            pattern: '^\+[1-9]\d{1,14}$'
+            example: "+351912345678"
+        - name: provider
+          in: query
+          description: Provider to use for validation
+          required: false
+          schema:
+            type: string
+            enum: [infobip, twilio]
+            default: infobip
+      responses:
+        "200":
+          description: Validation completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NumberValidationResponse"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/whatsapp/check-numbers:
+    post:
+      tags:
+        - WhatsApp Validation
+      summary: Batch check numbers
+      description: Check multiple phone numbers for WhatsApp availability (max 100)
+      operationId: checkWhatsAppNumbers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BatchNumberValidationRequest"
+      responses:
+        "200":
+          description: Batch validation completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BatchNumberValidationResponse"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  # Webhooks
+  /webhooks/meta:
+    get:
+      tags:
+        - Webhooks
+      summary: Meta webhook verification
+      description: Webhook verification endpoint for Instagram and Facebook Messenger setup
+      operationId: verifyMetaWebhook
+      security: []
+      parameters:
+        - name: hub.mode
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [subscribe]
+        - name: hub.verify_token
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: hub.challenge
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Verification successful
+          content:
+            text/plain:
+              schema:
+                type: string
+        "403":
+          description: Verification failed
+    post:
+      tags:
+        - Webhooks
+      summary: Meta webhook events
+      description: Receive webhook events from Instagram and Facebook Messenger
+      operationId: handleMetaWebhook
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MetaWebhookPayload"
+      responses:
+        "200":
+          description: Webhook received
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebhookAckResponse"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /webhooks/delivery-reports:
+    post:
+      tags:
+        - Webhooks
+      summary: Delivery reports
+      description: Receive delivery status updates for sent messages
+      operationId: handleDeliveryReport
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeliveryReportPayload"
+      responses:
+        "200":
+          description: Delivery report processed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebhookAckResponse"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /webhooks/incoming-messages:
+    post:
+      tags:
+        - Webhooks
+      summary: Incoming messages
+      description: Receive messages sent by customers
+      operationId: handleIncomingMessage
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/IncomingMessagePayload"
+      responses:
+        "200":
+          description: Incoming message processed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebhookAckResponse"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /webhooks/template-updates:
+    post:
+      tags:
+        - Webhooks
+      summary: Template updates
+      description: Receive notifications when templates are approved, rejected, or deleted
+      operationId: handleTemplateUpdate
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TemplateUpdatePayload"
+      responses:
+        "200":
+          description: Template update processed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebhookAckResponse"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  # Metrics
+  /metrics/meta:
+    get:
+      tags:
+        - Metrics
+      summary: Get metrics summary
+      description: Get comprehensive metrics summary for Meta platforms
+      operationId: getMetricsSummary
+      parameters:
+        - $ref: "#/components/parameters/TimeRangeParam"
+      responses:
+        "200":
+          description: Metrics retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MetricsSummaryResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /metrics/meta/success-rate:
+    get:
+      tags:
+        - Metrics
+      summary: Get success rate
+      description: Get message delivery success rate
+      operationId: getSuccessRate
+      parameters:
+        - $ref: "#/components/parameters/TimeRangeParam"
+      responses:
+        "200":
+          description: Success rate retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessRateResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /metrics/meta/response-time:
+    get:
+      tags:
+        - Metrics
+      summary: Get response time
+      description: Get API response time metrics
+      operationId: getResponseTime
+      parameters:
+        - $ref: "#/components/parameters/TimeRangeParam"
+      responses:
+        "200":
+          description: Response time retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseTimeResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /metrics/meta/errors:
+    get:
+      tags:
+        - Metrics
+      summary: Get error metrics
+      description: Get error statistics and details
+      operationId: getErrors
+      parameters:
+        - $ref: "#/components/parameters/TimeRangeParam"
+      responses:
+        "200":
+          description: Error metrics retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorMetricsResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /metrics/meta/webhooks:
+    get:
+      tags:
+        - Metrics
+      summary: Get webhook metrics
+      description: Get webhook processing statistics
+      operationId: getWebhookMetrics
+      parameters:
+        - $ref: "#/components/parameters/TimeRangeParam"
+      responses:
+        "200":
+          description: Webhook metrics retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebhookMetricsResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /metrics/meta/messaging-window-errors:
+    get:
+      tags:
+        - Metrics
+      summary: Get messaging window errors
+      description: Get 24-hour messaging window violation statistics
+      operationId: getMessagingWindowErrors
+      parameters:
+        - $ref: "#/components/parameters/TimeRangeParam"
+      responses:
+        "200":
+          description: Messaging window errors retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessagingWindowErrorsResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /metrics/meta/alerts:
+    get:
+      tags:
+        - Metrics
+      summary: Get active alerts
+      description: Get current active alerts and warnings
+      operationId: getAlerts
+      responses:
+        "200":
+          description: Alerts retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AlertsResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /metrics/meta/circuit-breaker:
+    get:
+      tags:
+        - Metrics
+      summary: Get circuit breaker status
+      description: Get circuit breaker state and statistics
+      operationId: getCircuitBreakerStatus
+      responses:
+        "200":
+          description: Circuit breaker status retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CircuitBreakerResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /metrics/meta/rate-limit:
+    get:
+      tags:
+        - Metrics
+      summary: Get rate limit status
+      description: Get current rate limit usage and remaining quota
+      operationId: getRateLimitStatus
+      responses:
+        "200":
+          description: Rate limit status retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RateLimitResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /metrics/meta/health:
+    get:
+      tags:
+        - Metrics
+      summary: Get health check
+      description: Get detailed health check for Meta integration
+      operationId: getMetaHealthCheck
+      responses:
+        "200":
+          description: Health check retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MetaHealthResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: API key authentication using Bearer token
+
+  parameters:
+    TimeRangeParam:
+      name: timeRange
+      in: query
+      description: Time range for metrics (1h, 24h, 7d, 30d)
+      required: false
+      schema:
+        type: string
+        enum: [1h, 24h, 7d, 30d]
+        default: 24h
+
+  responses:
+    BadRequestError:
+      description: Bad request - Invalid parameters
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            success: false
+            error:
+              code: VALIDATION_ERROR
+              message: Invalid phone number format
+            timestamp: "2026-01-20T10:30:00Z"
+
+    UnauthorizedError:
+      description: Unauthorized - Invalid or missing API key
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            success: false
+            error:
+              code: UNAUTHORIZED
+              message: Invalid or missing API key
+            timestamp: "2026-01-20T10:30:00Z"
+
+    ForbiddenError:
+      description: Forbidden - Session expired or permission denied
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            success: false
+            error:
+              code: SESSION_EXPIRED
+              message: WhatsApp session expired (use HSM to start new session)
+            timestamp: "2026-01-20T10:30:00Z"
+
+    NotFoundError:
+      description: Not found - Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            success: false
+            error:
+              code: NOT_FOUND
+              message: Resource not found
+            timestamp: "2026-01-20T10:30:00Z"
+
+    RateLimitError:
+      description: Too many requests - Rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            success: false
+            error:
+              code: RATE_LIMIT_EXCEEDED
+              message: Too many requests
+            timestamp: "2026-01-20T10:30:00Z"
+      headers:
+        X-RateLimit-Limit:
+          schema:
+            type: integer
+          description: Maximum requests allowed
+        X-RateLimit-Remaining:
+          schema:
+            type: integer
+          description: Remaining requests in current window
+        X-RateLimit-Reset:
+          schema:
+            type: integer
+          description: Unix timestamp when the limit resets
+
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            success: false
+            error:
+              code: INTERNAL_ERROR
+              message: Internal server error
+            timestamp: "2026-01-20T10:30:00Z"
+
+  schemas:
+    # Common Schemas
+    ErrorResponse:
+      type: object
+      required:
+        - success
+        - error
+        - timestamp
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+              example: VALIDATION_ERROR
+            message:
+              type: string
+              example: Invalid parameters
+            details:
+              type: object
+              additionalProperties: true
+        timestamp:
+          type: string
+          format: date-time
+          example: "2026-01-20T10:30:00Z"
+
+    # Health Schemas
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - timestamp
+        - checks
+      properties:
+        status:
+          type: string
+          enum: [healthy, unhealthy]
+          example: healthy
+        timestamp:
+          type: string
+          format: date-time
+          example: "2026-01-20T10:30:00Z"
+        checks:
+          type: object
+          properties:
+            database:
+              $ref: "#/components/schemas/HealthCheck"
+            redis:
+              $ref: "#/components/schemas/HealthCheck"
+            providers:
+              type: object
+              properties:
+                healthy:
+                  type: boolean
+                message:
+                  type: string
+                providers:
+                  type: object
+                  additionalProperties:
+                    $ref: "#/components/schemas/HealthCheck"
+
+    HealthCheck:
+      type: object
+      required:
+        - healthy
+        - message
+      properties:
+        healthy:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Connection successful
+        error:
+          type: string
+          example: Connection timeout
+
+    # Template Schemas
+    Template:
+      type: object
+      required:
+        - id
+        - name
+        - language
+        - status
+        - category
+      properties:
+        id:
+          type: string
+          example: template_123
+        name:
+          type: string
+          example: welcome_message
+        language:
+          type: string
+          example: en
+        status:
+          type: string
+          enum: [APPROVED, PENDING, REJECTED]
+          example: APPROVED
+        category:
+          type: string
+          enum: [MARKETING, UTILITY, AUTHENTICATION]
+          example: MARKETING
+        components:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                enum: [HEADER, BODY, FOOTER, BUTTONS]
+              text:
+                type: string
+              parameters:
+                type: array
+                items:
+                  type: string
+        rejection_reason:
+          type: string
+          nullable: true
+        is_approved:
+          type: boolean
+        parameters:
+          type: array
+          items:
+            type: string
+
+    TemplatesResponse:
+      type: object
+      required:
+        - success
+        - data
+        - timestamp
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            templates:
+              type: array
+              items:
+                $ref: "#/components/schemas/Template"
+            count:
+              type: integer
+              example: 10
+        timestamp:
+          type: string
+          format: date-time
+
+    TemplateResponse:
+      type: object
+      required:
+        - success
+        - data
+        - timestamp
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          $ref: "#/components/schemas/Template"
+        timestamp:
+          type: string
+          format: date-time
+
+    TemplateSyncResponse:
+      type: object
+      required:
+        - success
+        - data
+        - timestamp
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            message:
+              type: string
+              example: Templates synchronized successfully
+            statistics:
+              type: object
+              additionalProperties:
+                type: object
+                properties:
+                  added:
+                    type: integer
+                  updated:
+                    type: integer
+                  deleted:
+                    type: integer
+        timestamp:
+          type: string
+          format: date-time
+
+    # Message Request Schemas
+    HSMRequest:
+      type: object
+      required:
+        - to
+        - templateId
+        - parameters
+      properties:
+        to:
+          type: string
+          description: Phone number in E.164 format
+          pattern: '^\+[1-9]\d{1,14}$'
+          example: "+351912345678"
+        templateId:
+          type: string
+          description: Template unique identifier
+          example: template_123
+        parameters:
+          type: object
+          description: Template parameters as key-value pairs
+          additionalProperties:
+            type: string
+          example:
+            name: John Doe
+            code: "12345"
+        provider:
+          type: string
+          enum: [infobip, twilio]
+          example: infobip
+
+    TextRequest:
+      type: object
+      required:
+        - to
+        - text
+      properties:
+        to:
+          type: string
+          description: Phone number (E.164) or IGSID/PSID for Meta
+          example: "+351912345678"
+        text:
+          type: string
+          description: Message text (max 2000 characters)
+          maxLength: 2000
+          example: Hello! How can I help you today?
+        previewUrl:
+          type: boolean
+          description: Enable URL preview (WhatsApp only)
+          default: false
+        provider:
+          type: string
+          enum: [infobip, twilio, meta]
+          example: infobip
+        platform:
+          type: string
+          enum: [instagram, messenger]
+          description: Required for Meta provider
+          example: instagram
+
+    MediaRequest:
+      type: object
+      required:
+        - to
+        - type
+        - url
+      properties:
+        to:
+          type: string
+          description: Phone number (E.164) or IGSID/PSID for Meta
+          example: "+351912345678"
+        type:
+          type: string
+          enum: [image, document, audio, video]
+          example: image
+        url:
+          type: string
+          format: uri
+          description: Public URL of the media file
+          example: https://example.com/image.jpg
+        caption:
+          type: string
+          description: Media caption (optional)
+          maxLength: 1024
+          example: Check out this image!
+        filename:
+          type: string
+          description: Filename for documents
+          example: document.pdf
+        provider:
+          type: string
+          enum: [infobip, twilio, meta]
+          example: infobip
+        platform:
+          type: string
+          enum: [instagram, messenger]
+          description: Required for Meta provider
+
+    InteractiveButtonsRequest:
+      type: object
+      required:
+        - to
+        - body
+        - buttons
+      properties:
+        to:
+          type: string
+          example: "+351912345678"
+        body:
+          type: string
+          description: Message body text
+          example: Please select an option
+        buttons:
+          type: array
+          description: Buttons (max 3 for WhatsApp, max 13 for Meta)
+          minItems: 1
+          maxItems: 13
+          items:
+            type: object
+            required:
+              - id
+              - text
+            properties:
+              id:
+                type: string
+                example: btn_1
+              text:
+                type: string
+                maxLength: 20
+                example: Option 1
+        headerText:
+          type: string
+          description: Optional header text
+        footerText:
+          type: string
+          description: Optional footer text
+        provider:
+          type: string
+          enum: [infobip, twilio, meta]
+        platform:
+          type: string
+          enum: [instagram, messenger]
+
+    InteractiveListRequest:
+      type: object
+      required:
+        - to
+        - body
+        - buttonText
+        - sections
+      properties:
+        to:
+          type: string
+          example: "+351912345678"
+        body:
+          type: string
+          description: Message body text
+          example: Please select from the menu
+        buttonText:
+          type: string
+          description: Button text to open list
+          maxLength: 20
+          example: View Menu
+        sections:
+          type: array
+          description: List sections (max 10 items total)
+          minItems: 1
+          maxItems: 10
+          items:
+            type: object
+            required:
+              - title
+              - rows
+            properties:
+              title:
+                type: string
+                maxLength: 24
+                example: Main Dishes
+              rows:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - id
+                    - title
+                  properties:
+                    id:
+                      type: string
+                      example: item_1
+                    title:
+                      type: string
+                      maxLength: 24
+                      example: Pizza
+                    description:
+                      type: string
+                      maxLength: 72
+                      example: Delicious cheese pizza
+        headerText:
+          type: string
+        footerText:
+          type: string
+        provider:
+          type: string
+          enum: [infobip, twilio, meta]
+        platform:
+          type: string
+          enum: [instagram, messenger]
+
+    # Message Response Schemas
+    MessageResponse:
+      type: object
+      required:
+        - success
+        - data
+        - timestamp
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          required:
+            - messageId
+            - status
+          properties:
+            messageId:
+              type: string
+              example: msg_abc123
+            status:
+              type: string
+              enum: [PENDING, SENT, DELIVERED, READ, FAILED]
+              example: PENDING
+            to:
+              type: string
+              example: "+351912345678"
+            sentAt:
+              type: string
+              format: date-time
+              example: "2026-01-20T10:30:00Z"
+            platform:
+              type: string
+              enum: [whatsapp, instagram, messenger]
+            messagingWindowExpiresAt:
+              type: string
+              format: date-time
+              description: For Meta platforms only
+        timestamp:
+          type: string
+          format: date-time
+
+    MessageStatusResponse:
+      type: object
+      required:
+        - success
+        - data
+        - timestamp
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          required:
+            - messageId
+            - status
+            - to
+            - sentAt
+          properties:
+            messageId:
+              type: string
+              example: msg_abc123
+            status:
+              type: string
+              enum: [PENDING, SENT, DELIVERED, READ, FAILED]
+              example: DELIVERED
+            to:
+              type: string
+              example: "+351912345678"
+            sentAt:
+              type: string
+              format: date-time
+            deliveredAt:
+              type: string
+              format: date-time
+              nullable: true
+            readAt:
+              type: string
+              format: date-time
+              nullable: true
+            error:
+              type: string
+              nullable: true
+            platform:
+              type: string
+              enum: [whatsapp, instagram, messenger]
+        timestamp:
+          type: string
+          format: date-time
+
+    # Number Validation Schemas
+    NumberValidationResponse:
+      type: object
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          required:
+            - phoneNumber
+            - hasWhatsApp
+            - provider
+          properties:
+            phoneNumber:
+              type: string
+              example: "+351912345678"
+            hasWhatsApp:
+              type: boolean
+              nullable: true
+              description: "true: has WhatsApp, false: no WhatsApp, null: uncertain"
+              example: true
+            accountType:
+              type: string
+              enum: [consumer, business, unknown]
+              nullable: true
+              example: consumer
+            error:
+              type: string
+              nullable: true
+            provider:
+              type: string
+              enum: [infobip, twilio]
+              example: infobip
+            metadata:
+              type: object
+              additionalProperties: true
+              description: Provider-specific additional information
+
+    BatchNumberValidationRequest:
+      type: object
+      required:
+        - phoneNumbers
+      properties:
+        phoneNumbers:
+          type: array
+          description: Array of phone numbers in E.164 format (max 100)
+          minItems: 1
+          maxItems: 100
+          items:
+            type: string
+            pattern: '^\+[1-9]\d{1,14}$'
+          example:
+            - "+351912345678"
+            - "+351987654321"
+        provider:
+          type: string
+          enum: [infobip, twilio]
+          default: infobip
+          example: infobip
+
+    BatchNumberValidationResponse:
+      type: object
+      required:
+        - success
+        - data
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          required:
+            - results
+            - total
+            - provider
+          properties:
+            results:
+              type: array
+              items:
+                type: object
+                required:
+                  - phoneNumber
+                  - hasWhatsApp
+                  - provider
+                properties:
+                  phoneNumber:
+                    type: string
+                  hasWhatsApp:
+                    type: boolean
+                    nullable: true
+                  accountType:
+                    type: string
+                    enum: [consumer, business, unknown]
+                    nullable: true
+                  error:
+                    type: string
+                    nullable: true
+                  provider:
+                    type: string
+                  metadata:
+                    type: object
+                    additionalProperties: true
+            total:
+              type: integer
+              example: 2
+            provider:
+              type: string
+              example: infobip
+
+    # Webhook Schemas
+    MetaWebhookPayload:
+      type: object
+      required:
+        - object
+        - entry
+      properties:
+        object:
+          type: string
+          enum: [page, instagram]
+          example: page
+        entry:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                description: Page ID or Instagram Account ID
+              time:
+                type: integer
+                format: int64
+                description: Unix timestamp in milliseconds
+              messaging:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    sender:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          description: PSID or IGSID
+                    recipient:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                    timestamp:
+                      type: integer
+                      format: int64
+                    message:
+                      type: object
+                      properties:
+                        mid:
+                          type: string
+                        text:
+                          type: string
+                    delivery:
+                      type: object
+                      properties:
+                        mids:
+                          type: array
+                          items:
+                            type: string
+                        watermark:
+                          type: integer
+                          format: int64
+                    read:
+                      type: object
+                      properties:
+                        watermark:
+                          type: integer
+                          format: int64
+
+    DeliveryReportPayload:
+      type: object
+      required:
+        - messageId
+        - status
+        - timestamp
+      properties:
+        messageId:
+          type: string
+          example: msg_abc123
+        status:
+          type: string
+          enum: [SENT, DELIVERED, READ, FAILED]
+          example: DELIVERED
+        timestamp:
+          type: string
+          format: date-time
+        error:
+          type: string
+          nullable: true
+
+    IncomingMessagePayload:
+      type: object
+      required:
+        - messageId
+        - from
+        - to
+        - type
+        - timestamp
+      properties:
+        messageId:
+          type: string
+          example: incoming_msg_123
+        from:
+          type: string
+          description: Sender phone number or IGSID/PSID
+          example: "+351912345678"
+        to:
+          type: string
+          description: Recipient phone number or Page ID
+          example: "+351987654321"
+        type:
+          type: string
+          enum: [text, image, video, audio, document, location, contact]
+          example: text
+        content:
+          type: object
+          description: Message content (varies by type)
+          additionalProperties: true
+        timestamp:
+          type: string
+          format: date-time
+
+    TemplateUpdatePayload:
+      type: object
+      required:
+        - templateId
+        - name
+        - status
+        - timestamp
+      properties:
+        templateId:
+          type: string
+          example: template_123
+        name:
+          type: string
+          example: welcome_message
+        status:
+          type: string
+          enum: [APPROVED, REJECTED, DELETED]
+          example: APPROVED
+        timestamp:
+          type: string
+          format: date-time
+
+    WebhookAckResponse:
+      type: object
+      required:
+        - success
+        - message
+        - timestamp
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Webhook received
+        timestamp:
+          type: string
+          format: date-time
+
+    # Metrics Schemas
+    MetricsSummaryResponse:
+      type: object
+      required:
+        - success
+        - data
+        - timestamp
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            timeRange:
+              type: string
+              example: 24h
+            totalMessages:
+              type: integer
+              example: 1250
+            successRate:
+              type: number
+              format: float
+              example: 98.5
+            averageResponseTime:
+              type: integer
+              description: Average response time in milliseconds
+              example: 245
+            errorCount:
+              type: integer
+              example: 18
+            platforms:
+              type: object
+              properties:
+                instagram:
+                  $ref: "#/components/schemas/PlatformMetrics"
+                messenger:
+                  $ref: "#/components/schemas/PlatformMetrics"
+        timestamp:
+          type: string
+          format: date-time
+
+    PlatformMetrics:
+      type: object
+      properties:
+        messagesSent:
+          type: integer
+          example: 625
+        messagesDelivered:
+          type: integer
+          example: 615
+        messagesRead:
+          type: integer
+          example: 580
+        messagesFailed:
+          type: integer
+          example: 10
+        successRate:
+          type: number
+          format: float
+          example: 98.4
+
+    SuccessRateResponse:
+      type: object
+      required:
+        - success
+        - data
+        - timestamp
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            timeRange:
+              type: string
+              example: 24h
+            overallSuccessRate:
+              type: number
+              format: float
+              example: 98.5
+            byPlatform:
+              type: object
+              properties:
+                instagram:
+                  type: number
+                  format: float
+                  example: 98.8
+                messenger:
+                  type: number
+                  format: float
+                  example: 98.2
+            trend:
+              type: array
+              items:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                    format: date-time
+                  successRate:
+                    type: number
+                    format: float
+        timestamp:
+          type: string
+          format: date-time
+
+    ResponseTimeResponse:
+      type: object
+      required:
+        - success
+        - data
+        - timestamp
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            timeRange:
+              type: string
+              example: 24h
+            average:
+              type: integer
+              description: Average response time in milliseconds
+              example: 245
+            min:
+              type: integer
+              example: 120
+            max:
+              type: integer
+              example: 1850
+            p50:
+              type: integer
+              description: 50th percentile
+              example: 230
+            p95:
+              type: integer
+              description: 95th percentile
+              example: 450
+            p99:
+              type: integer
+              description: 99th percentile
+              example: 890
+        timestamp:
+          type: string
+          format: date-time
+
+    ErrorMetricsResponse:
+      type: object
+      required:
+        - success
+        - data
+        - timestamp
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            timeRange:
+              type: string
+              example: 24h
+            totalErrors:
+              type: integer
+              example: 18
+            errorRate:
+              type: number
+              format: float
+              example: 1.5
+            byErrorCode:
+              type: array
+              items:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: "2022"
+                  description:
+                    type: string
+                    example: Messaging window expired
+                  count:
+                    type: integer
+                    example: 12
+                  percentage:
+                    type: number
+                    format: float
+                    example: 66.7
+            recentErrors:
+              type: array
+              items:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                    format: date-time
+                  errorCode:
+                    type: string
+                  errorMessage:
+                    type: string
+                  platform:
+                    type: string
+                  recipientId:
+                    type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    WebhookMetricsResponse:
+      type: object
+      required:
+        - success
+        - data
+        - timestamp
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            timeRange:
+              type: string
+              example: 24h
+            totalWebhooks:
+              type: integer
+              example: 2450
+            successfulWebhooks:
+              type: integer
+              example: 2438
+            failedWebhooks:
+              type: integer
+              example: 12
+            averageProcessingTime:
+              type: integer
+              description: Average processing time in milliseconds
+              example: 85
+            byEventType:
+              type: object
+              properties:
+                message:
+                  type: integer
+                  example: 1250
+                delivery:
+                  type: integer
+                  example: 1150
+                read:
+                  type: integer
+                  example: 50
+        timestamp:
+          type: string
+          format: date-time
+
+    MessagingWindowErrorsResponse:
+      type: object
+      required:
+        - success
+        - data
+        - timestamp
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            timeRange:
+              type: string
+              example: 24h
+            totalErrors:
+              type: integer
+              example: 12
+            byPlatform:
+              type: object
+              properties:
+                instagram:
+                  type: integer
+                  example: 7
+                messenger:
+                  type: integer
+                  example: 5
+            recentErrors:
+              type: array
+              items:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                    format: date-time
+                  platform:
+                    type: string
+                  recipientId:
+                    type: string
+                  lastUserMessage:
+                    type: string
+                    format: date-time
+                  windowExpired:
+                    type: string
+                    format: date-time
+        timestamp:
+          type: string
+          format: date-time
+
+    AlertsResponse:
+      type: object
+      required:
+        - success
+        - data
+        - timestamp
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            activeAlerts:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: alert_123
+                  severity:
+                    type: string
+                    enum: [critical, warning, info]
+                    example: warning
+                  type:
+                    type: string
+                    example: HIGH_ERROR_RATE
+                  message:
+                    type: string
+                    example: Error rate exceeded 5% threshold
+                  triggeredAt:
+                    type: string
+                    format: date-time
+                  metadata:
+                    type: object
+                    additionalProperties: true
+        timestamp:
+          type: string
+          format: date-time
+
+    CircuitBreakerResponse:
+      type: object
+      required:
+        - success
+        - data
+        - timestamp
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            state:
+              type: string
+              enum: [CLOSED, OPEN, HALF_OPEN]
+              example: CLOSED
+            failureCount:
+              type: integer
+              example: 2
+            failureThreshold:
+              type: integer
+              example: 5
+            lastFailureTime:
+              type: string
+              format: date-time
+              nullable: true
+            nextRetryTime:
+              type: string
+              format: date-time
+              nullable: true
+        timestamp:
+          type: string
+          format: date-time
+
+    RateLimitResponse:
+      type: object
+      required:
+        - success
+        - data
+        - timestamp
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            limit:
+              type: integer
+              description: Maximum requests per hour
+              example: 200
+            remaining:
+              type: integer
+              description: Remaining requests in current window
+              example: 145
+            resetAt:
+              type: string
+              format: date-time
+              description: When the limit resets
+            currentUsage:
+              type: number
+              format: float
+              description: Current usage percentage
+              example: 27.5
+        timestamp:
+          type: string
+          format: date-time
+
+    MetaHealthResponse:
+      type: object
+      required:
+        - success
+        - data
+        - timestamp
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            status:
+              type: string
+              enum: [healthy, degraded, unhealthy]
+              example: healthy
+            apiConnectivity:
+              type: boolean
+              example: true
+            webhookConnectivity:
+              type: boolean
+              example: true
+            circuitBreakerState:
+              type: string
+              enum: [CLOSED, OPEN, HALF_OPEN]
+              example: CLOSED
+            rateLimitStatus:
+              type: string
+              enum: [ok, warning, critical]
+              example: ok
+            lastSuccessfulRequest:
+              type: string
+              format: date-time
+            platforms:
+              type: object
+              properties:
+                instagram:
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      enum: [healthy, unhealthy]
+                    lastMessageSent:
+                      type: string
+                      format: date-time
+                messenger:
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      enum: [healthy, unhealthy]
+                    lastMessageSent:
+                      type: string
+                      format: date-time
+        timestamp:
+          type: string
+          format: date-time

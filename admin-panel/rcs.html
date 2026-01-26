@@ -1,0 +1,700 @@
+<!doctype html>
+<html lang="pt">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RCS Messaging - Admin Panel</title>
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      .rcs-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      .message-type-selector {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+      }
+
+      .message-type-btn {
+        padding: 12px 24px;
+        border: 2px solid #e0e0e0;
+        background: white;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-size: 14px;
+        font-weight: 500;
+      }
+
+      .message-type-btn:hover {
+        border-color: #4caf50;
+        background: #f1f8f4;
+      }
+
+      .message-type-btn.active {
+        border-color: #4caf50;
+        background: #4caf50;
+        color: white;
+      }
+
+      .message-form {
+        display: none;
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .message-form.active {
+        display: block;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: #333;
+      }
+
+      .form-group input,
+      .form-group textarea,
+      .form-group select {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+        font-family: inherit;
+      }
+
+      .form-group textarea {
+        min-height: 100px;
+        resize: vertical;
+      }
+
+      .form-group small {
+        display: block;
+        margin-top: 5px;
+        color: #666;
+        font-size: 12px;
+      }
+
+      .suggestions-container,
+      .cards-container {
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 15px;
+        margin-top: 10px;
+      }
+
+      .suggestion-item,
+      .card-item {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+        padding: 10px;
+        background: #f9f9f9;
+        border-radius: 6px;
+      }
+
+      .suggestion-item input,
+      .card-item input {
+        flex: 1;
+      }
+
+      .btn-remove {
+        padding: 8px 16px;
+        background: #f44336;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+      }
+
+      .btn-add {
+        padding: 10px 20px;
+        background: #2196f3;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        margin-top: 10px;
+      }
+
+      .btn-send {
+        padding: 14px 32px;
+        background: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 500;
+        margin-top: 20px;
+      }
+
+      .btn-send:hover {
+        background: #45a049;
+      }
+
+      .btn-send:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+
+      .response-container {
+        margin-top: 30px;
+        padding: 20px;
+        border-radius: 8px;
+        display: none;
+      }
+
+      .response-container.success {
+        background: #e8f5e9;
+        border: 1px solid #4caf50;
+        display: block;
+      }
+
+      .response-container.error {
+        background: #ffebee;
+        border: 1px solid #f44336;
+        display: block;
+      }
+
+      .response-title {
+        font-weight: 600;
+        margin-bottom: 10px;
+        font-size: 16px;
+      }
+
+      .response-content {
+        font-family: "Courier New", monospace;
+        font-size: 13px;
+        white-space: pre-wrap;
+        word-break: break-all;
+      }
+
+      .card-preview {
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 15px;
+        margin-top: 10px;
+        background: #fafafa;
+      }
+
+      .card-preview h4 {
+        margin: 0 0 10px 0;
+        color: #333;
+      }
+
+      .card-preview p {
+        margin: 5px 0;
+        color: #666;
+        font-size: 14px;
+      }
+
+      .loading {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #4caf50;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-left: 10px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="header-placeholder"></div>
+
+    <div class="rcs-container">
+      <h1>📱 RCS Messaging</h1>
+      <p style="color: #666; margin-bottom: 30px">
+        Envie mensagens RCS ricas com cards, carrosséis e sugestões interativas
+      </p>
+
+      <!-- Message Type Selector -->
+      <div class="message-type-selector">
+        <button class="message-type-btn active" data-type="text">
+          💬 Texto
+        </button>
+        <button class="message-type-btn" data-type="file">📎 Ficheiro</button>
+        <button class="message-type-btn" data-type="card">🎴 Rich Card</button>
+        <button class="message-type-btn" data-type="carousel">
+          🎠 Carrossel
+        </button>
+        <button class="message-type-btn" data-type="suggestions">
+          💡 Com Sugestões
+        </button>
+      </div>
+
+      <!-- Text Message Form -->
+      <div id="form-text" class="message-form active">
+        <h2>Mensagem de Texto RCS</h2>
+        <form id="textForm">
+          <div class="form-group">
+            <label for="text-to">Destinatário *</label>
+            <input
+              type="tel"
+              id="text-to"
+              placeholder="+351912345678"
+              required
+            />
+            <small>Número de telefone em formato E.164</small>
+          </div>
+          <div class="form-group">
+            <label for="text-message">Mensagem *</label>
+            <textarea
+              id="text-message"
+              placeholder="Digite sua mensagem..."
+              required
+            ></textarea>
+          </div>
+          <div class="form-group">
+            <label for="text-notify">Webhook URL (opcional)</label>
+            <input
+              type="url"
+              id="text-notify"
+              placeholder="https://your-webhook.com/delivery"
+            />
+          </div>
+          <button type="submit" class="btn-send">Enviar Mensagem</button>
+        </form>
+      </div>
+
+      <!-- File Message Form -->
+      <div id="form-file" class="message-form">
+        <h2>Enviar Ficheiro RCS</h2>
+        <form id="fileForm">
+          <div class="form-group">
+            <label for="file-to">Destinatário *</label>
+            <input
+              type="tel"
+              id="file-to"
+              placeholder="+351912345678"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="file-url">URL do Ficheiro *</label>
+            <input
+              type="url"
+              id="file-url"
+              placeholder="https://example.com/document.pdf"
+              required
+            />
+            <small>URL HTTPS do ficheiro a enviar</small>
+          </div>
+          <div class="form-group">
+            <label for="file-caption">Legenda (opcional)</label>
+            <textarea
+              id="file-caption"
+              placeholder="Descrição do ficheiro..."
+            ></textarea>
+          </div>
+          <div class="form-group">
+            <label for="file-filename">Nome do Ficheiro (opcional)</label>
+            <input type="text" id="file-filename" placeholder="documento.pdf" />
+          </div>
+          <button type="submit" class="btn-send">Enviar Ficheiro</button>
+        </form>
+      </div>
+
+      <!-- Rich Card Form -->
+      <div id="form-card" class="message-form">
+        <h2>Rich Card RCS</h2>
+        <form id="cardForm">
+          <div class="form-group">
+            <label for="card-to">Destinatário *</label>
+            <input
+              type="tel"
+              id="card-to"
+              placeholder="+351912345678"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="card-title">Título *</label>
+            <input
+              type="text"
+              id="card-title"
+              placeholder="Título do card"
+              required
+              maxlength="200"
+            />
+            <small>Máximo 200 caracteres</small>
+          </div>
+          <div class="form-group">
+            <label for="card-description">Descrição</label>
+            <textarea
+              id="card-description"
+              placeholder="Descrição do card..."
+              maxlength="2000"
+            ></textarea>
+            <small>Máximo 2000 caracteres</small>
+          </div>
+          <div class="form-group">
+            <label for="card-media">URL da Imagem/Vídeo</label>
+            <input
+              type="url"
+              id="card-media"
+              placeholder="https://example.com/image.jpg"
+            />
+          </div>
+          <div class="form-group">
+            <label for="card-height">Altura da Media</label>
+            <select id="card-height">
+              <option value="SHORT">Pequena</option>
+              <option value="MEDIUM" selected>Média</option>
+              <option value="TALL">Grande</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Sugestões (máximo 4)</label>
+            <div id="card-suggestions" class="suggestions-container">
+              <!-- Suggestions will be added here -->
+            </div>
+            <button type="button" class="btn-add" onclick="addCardSuggestion()">
+              + Adicionar Sugestão
+            </button>
+          </div>
+          <button type="submit" class="btn-send">Enviar Card</button>
+        </form>
+      </div>
+
+      <!-- Carousel Form -->
+      <div id="form-carousel" class="message-form">
+        <h2>Carrossel RCS</h2>
+        <form id="carouselForm">
+          <div class="form-group">
+            <label for="carousel-to">Destinatário *</label>
+            <input
+              type="tel"
+              id="carousel-to"
+              placeholder="+351912345678"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="carousel-width">Largura dos Cards</label>
+            <select id="carousel-width">
+              <option value="SMALL">Pequena</option>
+              <option value="MEDIUM" selected>Média</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Cards (máximo 10)</label>
+            <div id="carousel-cards" class="cards-container">
+              <!-- Cards will be added here -->
+            </div>
+            <button type="button" class="btn-add" onclick="addCarouselCard()">
+              + Adicionar Card
+            </button>
+          </div>
+          <button type="submit" class="btn-send">Enviar Carrossel</button>
+        </form>
+      </div>
+
+      <!-- Suggestions Form -->
+      <div id="form-suggestions" class="message-form">
+        <h2>Mensagem com Sugestões</h2>
+        <form id="suggestionsForm">
+          <div class="form-group">
+            <label for="sugg-to">Destinatário *</label>
+            <input
+              type="tel"
+              id="sugg-to"
+              placeholder="+351912345678"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="sugg-text">Mensagem *</label>
+            <textarea
+              id="sugg-text"
+              placeholder="Digite sua mensagem..."
+              required
+            ></textarea>
+          </div>
+          <div class="form-group">
+            <label>Sugestões (máximo 4)</label>
+            <div id="sugg-suggestions" class="suggestions-container">
+              <!-- Suggestions will be added here -->
+            </div>
+            <button type="button" class="btn-add" onclick="addSuggestion()">
+              + Adicionar Sugestão
+            </button>
+          </div>
+          <button type="submit" class="btn-send">Enviar Mensagem</button>
+        </form>
+      </div>
+
+      <!-- Response Container -->
+      <div id="response" class="response-container">
+        <div class="response-title"></div>
+        <div class="response-content"></div>
+      </div>
+    </div>
+
+    <script src="header.js"></script>
+    <script>
+      // Message type switching
+      document.querySelectorAll(".message-type-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const type = btn.dataset.type;
+
+          // Update buttons
+          document
+            .querySelectorAll(".message-type-btn")
+            .forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+
+          // Update forms
+          document
+            .querySelectorAll(".message-form")
+            .forEach((f) => f.classList.remove("active"));
+          document.getElementById(`form-${type}`).classList.add("active");
+
+          // Hide response
+          document.getElementById("response").className = "response-container";
+        });
+      });
+
+      // Initialize suggestions for card form
+      addCardSuggestion();
+
+      // Initialize suggestions for suggestions form
+      addSuggestion();
+
+      // Initialize carousel with one card
+      addCarouselCard();
+
+      // Add card suggestion
+      function addCardSuggestion() {
+        const container = document.getElementById("card-suggestions");
+        if (container.children.length >= 4) {
+          alert("Máximo 4 sugestões permitidas");
+          return;
+        }
+
+        const item = document.createElement("div");
+        item.className = "suggestion-item";
+        item.innerHTML = `
+                <input type="text" placeholder="Texto da sugestão" class="sugg-text" required>
+                <input type="text" placeholder="Postback Data" class="sugg-data" required>
+                <button type="button" class="btn-remove" onclick="this.parentElement.remove()">Remover</button>
+            `;
+        container.appendChild(item);
+      }
+
+      // Add suggestion
+      function addSuggestion() {
+        const container = document.getElementById("sugg-suggestions");
+        if (container.children.length >= 4) {
+          alert("Máximo 4 sugestões permitidas");
+          return;
+        }
+
+        const item = document.createElement("div");
+        item.className = "suggestion-item";
+        item.innerHTML = `
+                <input type="text" placeholder="Texto da sugestão" class="sugg-text" required>
+                <input type="text" placeholder="Postback Data" class="sugg-data" required>
+                <button type="button" class="btn-remove" onclick="this.parentElement.remove()">Remover</button>
+            `;
+        container.appendChild(item);
+      }
+
+      // Add carousel card
+      function addCarouselCard() {
+        const container = document.getElementById("carousel-cards");
+        if (container.children.length >= 10) {
+          alert("Máximo 10 cards permitidos");
+          return;
+        }
+
+        const cardNum = container.children.length + 1;
+        const item = document.createElement("div");
+        item.className = "card-item";
+        item.style.flexDirection = "column";
+        item.innerHTML = `
+                <h4>Card ${cardNum}</h4>
+                <input type="text" placeholder="Título *" class="card-title" required maxlength="200">
+                <textarea placeholder="Descrição" class="card-desc" maxlength="2000"></textarea>
+                <input type="url" placeholder="URL da Imagem" class="card-media">
+                <button type="button" class="btn-remove" onclick="this.parentElement.remove()">Remover Card</button>
+            `;
+        container.appendChild(item);
+      }
+
+      // Form submissions
+      document
+        .getElementById("textForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          await sendMessage("/api/rcs/text", {
+            to: document.getElementById("text-to").value,
+            text: document.getElementById("text-message").value,
+            notifyUrl:
+              document.getElementById("text-notify").value || undefined,
+          });
+        });
+
+      document
+        .getElementById("fileForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          await sendMessage("/api/rcs/file", {
+            to: document.getElementById("file-to").value,
+            fileUrl: document.getElementById("file-url").value,
+            caption: document.getElementById("file-caption").value || undefined,
+            filename:
+              document.getElementById("file-filename").value || undefined,
+          });
+        });
+
+      document
+        .getElementById("cardForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const suggestions = Array.from(
+            document.querySelectorAll("#card-suggestions .suggestion-item"),
+          ).map((item) => ({
+            text: item.querySelector(".sugg-text").value,
+            postbackData: item.querySelector(".sugg-data").value,
+          }));
+
+          await sendMessage("/api/rcs/card", {
+            to: document.getElementById("card-to").value,
+            title: document.getElementById("card-title").value,
+            description:
+              document.getElementById("card-description").value || undefined,
+            mediaUrl: document.getElementById("card-media").value || undefined,
+            mediaHeight: document.getElementById("card-height").value,
+            suggestions: suggestions.length > 0 ? suggestions : undefined,
+          });
+        });
+
+      document
+        .getElementById("carouselForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const cards = Array.from(
+            document.querySelectorAll("#carousel-cards .card-item"),
+          ).map((item) => {
+            const card = {
+              title: item.querySelector(".card-title").value,
+            };
+
+            const desc = item.querySelector(".card-desc").value;
+            if (desc) card.description = desc;
+
+            const media = item.querySelector(".card-media").value;
+            if (media) card.mediaUrl = media;
+
+            return card;
+          });
+
+          await sendMessage("/api/rcs/carousel", {
+            to: document.getElementById("carousel-to").value,
+            cardWidth: document.getElementById("carousel-width").value,
+            cards: cards,
+          });
+        });
+
+      document
+        .getElementById("suggestionsForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const suggestions = Array.from(
+            document.querySelectorAll("#sugg-suggestions .suggestion-item"),
+          ).map((item) => ({
+            text: item.querySelector(".sugg-text").value,
+            postbackData: item.querySelector(".sugg-data").value,
+          }));
+
+          await sendMessage("/api/rcs/suggestions", {
+            to: document.getElementById("sugg-to").value,
+            text: document.getElementById("sugg-text").value,
+            suggestions: suggestions,
+          });
+        });
+
+      // Send message function
+      async function sendMessage(endpoint, data) {
+        const responseDiv = document.getElementById("response");
+        const submitBtn = event.target.querySelector(".btn-send");
+
+        // Show loading
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = 'Enviando... <span class="loading"></span>';
+        responseDiv.className = "response-container";
+
+        try {
+          const response = await fetch(endpoint, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            responseDiv.className = "response-container success";
+            responseDiv.querySelector(".response-title").textContent =
+              "✅ Mensagem enviada com sucesso!";
+            responseDiv.querySelector(".response-content").textContent =
+              JSON.stringify(result, null, 2);
+          } else {
+            responseDiv.className = "response-container error";
+            responseDiv.querySelector(".response-title").textContent =
+              "❌ Erro ao enviar mensagem";
+            responseDiv.querySelector(".response-content").textContent =
+              JSON.stringify(result, null, 2);
+          }
+        } catch (error) {
+          responseDiv.className = "response-container error";
+          responseDiv.querySelector(".response-title").textContent =
+            "❌ Erro de conexão";
+          responseDiv.querySelector(".response-content").textContent =
+            error.message;
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = submitBtn.textContent.replace(
+            "Enviando...",
+            "Enviar",
+          );
+          submitBtn.innerHTML = submitBtn.innerHTML.replace(
+            /<span class="loading"><\/span>/,
+            "",
+          );
+        }
+      }
+    </script>
+  </body>
+</html>
