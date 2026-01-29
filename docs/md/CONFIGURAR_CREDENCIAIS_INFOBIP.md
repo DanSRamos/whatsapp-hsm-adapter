@@ -54,7 +54,7 @@ INFOBIP_WEBHOOK_SECRET=my_secret_webhook_token_123
 Depois de atualizar o `.env`, executa o script de teste:
 
 ```bash
-php test_rcs_infobip.php
+php scripts/test_rcs_infobip.php
 ```
 
 **Resultado esperado**:
@@ -159,7 +159,7 @@ tail -f public/storage/logs/whatsapp-adapter-*.log
 - [ ] Copiei a API Key
 - [ ] Copiei o Sender ID (número WhatsApp)
 - [ ] Atualizei o ficheiro `.env`
-- [ ] Executei `php test_rcs_infobip.php`
+- [ ] Executei `php scripts/test_rcs_infobip.php`
 - [ ] Todos os testes passaram
 - [ ] Testei envio de mensagem
 - [ ] Testei via Admin Panel

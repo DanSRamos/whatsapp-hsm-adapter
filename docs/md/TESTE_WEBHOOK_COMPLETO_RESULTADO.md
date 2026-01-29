@@ -290,7 +290,7 @@ Meta Platform verifica:
 ### Executar o teste completo:
 
 ```bash
-php test_webhook_meta_completo.php
+php scripts/test_webhook_meta_completo.php
 ```
 
 ### Ver requisições no ngrok:
@@ -333,7 +333,7 @@ Depois disso, o Meta vai começar a enviar webhooks reais e tudo vai funcionar! 
 
 ## 📁 FICHEIROS RELACIONADOS
 
-- `test_webhook_meta_completo.php` - Script de teste completo
+- `scripts/test_webhook_meta_completo.php` - Script de teste completo
 - `APP_DEVELOPMENT_MODE_ANALISE.md` - Análise do problema de privilégios
 - `ADICIONAR_TESTER_AGORA.md` - Guia para adicionar Tester
 - `DIAGRAMA_APP_MODE.md` - Diagramas visuais

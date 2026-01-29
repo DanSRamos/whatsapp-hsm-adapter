@@ -83,7 +83,7 @@ A tua conta Infobip **não tem RCS ativado**. Os endpoints RCS retornam 404, o q
 
 4. **Testa novamente**:
    ```bash
-   php test_infobip_direct.php
+   php scripts/test_infobip_direct.php
    ```
 
 ### Opção 2: Usar WhatsApp (Disponível Agora)

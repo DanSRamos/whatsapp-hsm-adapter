@@ -1,9 +1,13 @@
 <!doctype html>
-<html lang="pt">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>API Documentation - Multi-Platform Messaging Adapter</title>
+    <title data-i18n-title="apiDocsTitle">
+      API Documentation - Multi-Platform Messaging Adapter
+    </title>
+    <script src="i18n.js"></script>
+    <script src="language-selector.js"></script>
     <link
       rel="stylesheet"
       href="https://unpkg.com/swagger-ui-dist@5.10.5/swagger-ui.css"
@@ -251,19 +255,29 @@
   </head>
   <body>
     <div class="header">
-      <a href="/admin-panel/index-tabs.html" class="back-link">
-        ← Voltar ao Dashboard
+      <a
+        href="/admin-panel/index-tabs.html"
+        class="back-link"
+        data-i18n="backToDashboard"
+      >
+        ← Back to Dashboard
       </a>
-      <h1>📚 API Documentation</h1>
-      <p>Documentação interativa da API Multi-Platform Messaging Adapter</p>
+      <h1 data-i18n="apiDocsTitle">📚 API Documentation</h1>
+      <p data-i18n="apiDocsSubtitle">
+        Interactive API documentation for Multi-Platform Messaging Adapter
+      </p>
     </div>
 
     <div class="nav-tabs">
       <button class="nav-tab active" onclick="showTab('swagger')">
-        Interactive API
+        <span data-i18n="interactiveAPI">Interactive API</span>
       </button>
-      <button class="nav-tab" onclick="showTab('info')">Informações</button>
-      <button class="nav-tab" onclick="showTab('examples')">Exemplos</button>
+      <button class="nav-tab" onclick="showTab('info')">
+        <span data-i18n="information">Information</span>
+      </button>
+      <button class="nav-tab" onclick="showTab('examples')">
+        <span data-i18n="examples">Examples</span>
+      </button>
     </div>
 
     <!-- Swagger UI Tab -->

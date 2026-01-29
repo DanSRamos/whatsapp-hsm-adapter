@@ -1,9 +1,11 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
+<!doctype html>
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Performance Dashboard - WhatsApp HSM Adapter</title>
+    <script src="i18n.js"></script>
+    <script src="language-selector.js"></script>
     <link rel="stylesheet" href="styles.css" />
     <style>
       .dashboard-container {
@@ -242,39 +244,41 @@
       }
     </style>
   </head>
-  <body>
-    <script src="header.js"></script>
-
+  <body data-page="performance">
     <div class="dashboard-container">
       <div class="dashboard-header">
-        <h1>⚡ Performance Dashboard</h1>
-        <p>Monitoramento de performance e saúde do sistema</p>
+        <h1 data-i18n="performanceDashboardTitle">⚡ Performance Dashboard</h1>
+        <p data-i18n="performanceDashboardSubtitle">
+          System performance and health monitoring
+        </p>
       </div>
 
       <button class="refresh-btn" onclick="refreshDashboard()">
-        🔄 Atualizar
+        🔄 <span data-i18n="update">Update</span>
       </button>
 
       <div class="performance-grid">
         <!-- Tempo de Resposta -->
         <div class="performance-card">
-          <h3>⚡ Tempo de Resposta - Instagram</h3>
+          <h3 data-i18n="responseTimeInstagram">
+            ⚡ Response Time - Instagram
+          </h3>
           <div class="stat-row">
-            <span class="stat-label">Média</span>
+            <span class="stat-label" data-i18n="average">Average</span>
             <span class="stat-value" id="ig-avg">--</span>
           </div>
           <div class="stat-row">
-            <span class="stat-label">Mínimo</span>
+            <span class="stat-label" data-i18n="minimum">Minimum</span>
             <span class="stat-value" id="ig-min">--</span>
           </div>
           <div class="stat-row">
-            <span class="stat-label">Máximo</span>
+            <span class="stat-label" data-i18n="maximum">Maximum</span>
             <span class="stat-value" id="ig-max">--</span>
           </div>
           <div class="percentile-bars">
             <div class="percentile-bar">
               <div class="percentile-label">
-                <span>P50 (Mediana)</span>
+                <span data-i18n="median">Median (P50)</span>
                 <span id="ig-p50">--</span>
               </div>
               <div class="bar-container">
@@ -304,17 +308,19 @@
 
         <!-- Tempo de Resposta Messenger -->
         <div class="performance-card">
-          <h3>⚡ Tempo de Resposta - Messenger</h3>
+          <h3 data-i18n="responseTimeMessenger">
+            ⚡ Response Time - Messenger
+          </h3>
           <div class="stat-row">
-            <span class="stat-label">Média</span>
+            <span class="stat-label" data-i18n="average">Average</span>
             <span class="stat-value" id="msg-avg">--</span>
           </div>
           <div class="stat-row">
-            <span class="stat-label">Mínimo</span>
+            <span class="stat-label" data-i18n="minimum">Minimum</span>
             <span class="stat-value" id="msg-min">--</span>
           </div>
           <div class="stat-row">
-            <span class="stat-label">Máximo</span>
+            <span class="stat-label" data-i18n="maximum">Maximum</span>
             <span class="stat-value" id="msg-max">--</span>
           </div>
           <div class="percentile-bars">
@@ -426,7 +432,7 @@
 
           // Carregar circuit breaker status
           const cbRes = await fetch(
-            "/metrics/meta/circuit-breaker?service=meta_api"
+            "/metrics/meta/circuit-breaker?service=meta_api",
           );
           const cbData = await cbRes.json();
 
@@ -499,16 +505,16 @@
           state === "closed"
             ? "cb-closed"
             : state === "open"
-            ? "cb-open"
-            : "cb-half-open";
+              ? "cb-open"
+              : "cb-half-open";
         const stateEmoji =
           state === "closed" ? "✅" : state === "open" ? "❌" : "⚠️";
         const stateText =
           state === "closed"
             ? "CLOSED"
             : state === "open"
-            ? "OPEN"
-            : "HALF-OPEN";
+              ? "OPEN"
+              : "HALF-OPEN";
 
         container.innerHTML = `
                 <div class="circuit-breaker-status">
@@ -522,11 +528,11 @@
                         <div class="cb-details">
                             Estado: ${stateText} | 
                             Falhas: ${data.failures || 0} / ${
-          data.failure_threshold || 5
-        } | 
+                              data.failure_threshold || 5
+                            } | 
                             Sucessos: ${data.successes || 0} / ${
-          data.success_threshold || 2
-        }
+                              data.success_threshold || 2
+                            }
                         </div>
                     </div>
                 </div>

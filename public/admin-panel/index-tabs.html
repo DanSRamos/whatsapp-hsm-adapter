@@ -1,9 +1,13 @@
 <!doctype html>
-<html lang="pt">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Multi-Platform Messaging Admin Panel</title>
+    <title data-i18n-title="dashboardTitle">
+      Multi-Platform Messaging Admin Panel
+    </title>
+    <script src="i18n.js"></script>
+    <script src="language-selector.js"></script>
     <style>
       * {
         margin: 0;
@@ -167,142 +171,36 @@
   </head>
   <body>
     <div class="container">
-      <header>
-        <h1>📱 Multi-Platform Messaging Admin Panel</h1>
-        <div class="subtitle">
-          Gerir mensagens via WhatsApp, Instagram e Facebook Messenger
+      <header class="header">
+        <h1 data-i18n="dashboardTitle">
+          📱 Multi-Platform Messaging Admin Panel
+        </h1>
+        <div class="subtitle" data-i18n="dashboardSubtitle">
+          Unified messaging API for WhatsApp, Instagram, and Facebook Messenger
         </div>
       </header>
 
       <div class="tab-navigation">
         <button class="tab-button active" onclick="switchTab('messages')">
-          💬 Mensagens
+          <span data-i18n="messages">💬 Messages</span>
         </button>
-        <button class="tab-button" onclick="switchTab('rcs')">📱 RCS</button>
         <button class="tab-button" onclick="switchTab('documentation')">
-          📚 Documentação
-        </button>
-        <button class="tab-button" onclick="switchTab('monitoring')">
-          📊 Alertas & Monitoramento
+          <span data-i18n="documentation">📚 Documentation</span>
         </button>
       </div>
 
       <!-- Tab: Messages -->
       <div id="tab-messages" class="tab-content active">
         <div class="quick-links">
-          <h2>💬 Gestão de Mensagens</h2>
+          <h2>💬 <span data-i18n="messages">Message Management</span></h2>
           <div class="link-grid">
             <a href="index.html" class="link-card" target="_blank">
-              <h3>📤 Enviar Mensagens</h3>
-              <p>
-                Interface completa para enviar mensagens via WhatsApp, Instagram
-                e Messenger
+              <h3>📤 <span data-i18n="sendMessage">Send Messages</span></h3>
+              <p data-i18n="sendMessageDesc">
+                Complete interface to send messages via WhatsApp, Instagram,
+                Messenger and RCS
               </p>
             </a>
-            <a href="index.html#templates" class="link-card" target="_blank">
-              <h3>📋 Templates HSM</h3>
-              <p>Gerir e usar templates aprovados para WhatsApp</p>
-            </a>
-            <a href="index.html#messages" class="link-card" target="_blank">
-              <h3>📨 Mensagens Recebidas</h3>
-              <p>
-                Visualizar webhooks e mensagens recebidas de todas as
-                plataformas
-              </p>
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Tab: RCS -->
-      <div id="tab-rcs" class="tab-content">
-        <div class="quick-links">
-          <h2>📱 RCS Messaging</h2>
-          <p style="margin-bottom: 20px; color: #666">
-            Rich Communication Services - Mensagens ricas com cards, carrosséis
-            e sugestões interativas
-          </p>
-
-          <div class="link-grid">
-            <a href="rcs.html" class="link-card">
-              <h3>📤 Enviar Mensagens RCS</h3>
-              <p>
-                Interface completa para enviar mensagens RCS com rich cards,
-                carrosséis e sugestões
-              </p>
-            </a>
-            <a href="rcs.html#text" class="link-card">
-              <h3>💬 Mensagem de Texto</h3>
-              <p>Enviar mensagens de texto simples via RCS</p>
-            </a>
-            <a href="rcs.html#card" class="link-card">
-              <h3>🎴 Rich Card</h3>
-              <p>
-                Criar e enviar rich cards com imagem, título, descrição e botões
-              </p>
-            </a>
-            <a href="rcs.html#carousel" class="link-card">
-              <h3>🎠 Carrossel</h3>
-              <p>Enviar carrosséis com múltiplos cards deslizáveis</p>
-            </a>
-            <a href="rcs.html#file" class="link-card">
-              <h3>📎 Ficheiros</h3>
-              <p>Enviar documentos, PDFs e outros ficheiros via RCS</p>
-            </a>
-            <a href="rcs.html#suggestions" class="link-card">
-              <h3>💡 Sugestões</h3>
-              <p>Mensagens com botões de resposta rápida e ações sugeridas</p>
-            </a>
-          </div>
-
-          <div class="info-box" style="margin-top: 30px">
-            <h3>ℹ️ Sobre RCS</h3>
-            <p>
-              <strong>RCS (Rich Communication Services)</strong> é o sucessor do
-              SMS tradicional, oferecendo funcionalidades avançadas como:
-            </p>
-            <ul style="margin-top: 10px; margin-left: 20px; line-height: 1.8">
-              <li>📸 Imagens e vídeos em alta qualidade</li>
-              <li>🎴 Rich cards interativos</li>
-              <li>🎠 Carrosséis de produtos</li>
-              <li>💬 Sugestões de resposta rápida</li>
-              <li>📎 Partilha de ficheiros</li>
-              <li>✅ Confirmações de leitura e entrega</li>
-            </ul>
-            <p style="margin-top: 15px">
-              <strong>Nota:</strong> RCS requer que o destinatário tenha um
-              dispositivo e operadora compatível. Verifique a cobertura RCS
-              antes de enviar mensagens.
-            </p>
-          </div>
-
-          <div
-            class="info-box"
-            style="
-              margin-top: 20px;
-              background: #fff3e0;
-              border-left-color: #ff9800;
-            "
-          >
-            <h3 style="color: #e65100">⚙️ Configuração</h3>
-            <p>
-              Para usar RCS, certifique-se de que as seguintes variáveis estão
-              configuradas no <code>.env</code>:
-            </p>
-            <ul
-              style="
-                margin-top: 10px;
-                margin-left: 20px;
-                line-height: 1.8;
-                font-family: monospace;
-                font-size: 13px;
-              "
-            >
-              <li>INFOBIP_API_KEY</li>
-              <li>INFOBIP_BASE_URL</li>
-              <li>INFOBIP_RCS_SENDER (ou INFOBIP_SENDER)</li>
-              <li>INFOBIP_WEBHOOK_SECRET</li>
-            </ul>
           </div>
         </div>
       </div>
@@ -310,19 +208,56 @@
       <!-- Tab: Documentation -->
       <div id="tab-documentation" class="tab-content">
         <div class="quick-links">
-          <h2>📚 Documentação do Sistema</h2>
+          <h2>
+            📚 <span data-i18n="documentation">System Documentation</span>
+          </h2>
 
           <h3 style="margin-top: 20px; margin-bottom: 10px; color: #666">
-            🚀 Guias de Setup
+            📱 <span data-i18n="rcsMessaging">RCS Messaging</span>
+          </h3>
+          <div class="link-grid">
+            <a href="rcs.html" class="link-card">
+              <h3>📤 <span data-i18n="rcsInterface">RCS Interface</span></h3>
+              <p data-i18n="rcsInterfaceDesc">
+                Complete interface to send RCS messages with rich cards,
+                carousels and suggestions
+              </p>
+            </a>
+            <a
+              href="doc-viewer.html?doc=docs/md/RCS_IMPLEMENTATION_SUMMARY.md"
+              class="link-card"
+            >
+              <h3>
+                📋 <span data-i18n="rcsImplementation">RCS Implementation</span>
+              </h3>
+              <p data-i18n="rcsImplementationDesc">
+                Technical documentation about RCS implementation via Infobip
+              </p>
+            </a>
+            <a
+              href="doc-viewer.html?doc=docs/md/INFOBIP_RCS_SETUP.md"
+              class="link-card"
+            >
+              <h3>⚙️ <span data-i18n="rcsSetupGuide">RCS Setup Guide</span></h3>
+              <p data-i18n="rcsSetupGuideDesc">
+                How to configure RCS credentials and test the integration
+              </p>
+            </a>
+          </div>
+
+          <h3 style="margin-top: 30px; margin-bottom: 10px; color: #666">
+            🚀 <span data-i18n="setupGuides">Setup Guides</span>
           </h3>
           <div class="link-grid">
             <a
               href="doc-viewer.html?doc=docs/INSTAGRAM_SETUP.md"
               class="link-card"
             >
-              <h3>📱 Instagram Setup</h3>
-              <p>
-                Como configurar credenciais Meta e conectar Instagram
+              <h3>
+                📱 <span data-i18n="instagramSetup">Instagram Setup</span>
+              </h3>
+              <p data-i18n="instagramSetupDesc">
+                How to configure Meta credentials and connect Instagram
                 Professional Account
               </p>
             </a>
@@ -330,59 +265,97 @@
               href="doc-viewer.html?doc=docs/META_CREDENTIALS_SETUP.md"
               class="link-card"
             >
-              <h3>🔑 Meta Credentials</h3>
-              <p>
-                Guia completo para obter e configurar credenciais da Meta API
+              <h3>
+                🔑 <span data-i18n="metaCredentials">Meta Credentials</span>
+              </h3>
+              <p data-i18n="metaCredentialsDesc">
+                Complete guide to obtain and configure Meta API credentials
               </p>
             </a>
             <a
               href="doc-viewer.html?doc=docs/META_PRODUCTION_DEPLOYMENT.md"
               class="link-card"
             >
-              <h3>🏭 Production Deployment</h3>
-              <p>Preparação e configuração para ambiente de produção</p>
+              <h3>
+                🏭
+                <span data-i18n="productionDeployment"
+                  >Production Deployment</span
+                >
+              </h3>
+              <p data-i18n="productionDeploymentDesc">
+                Preparation and configuration for production environment
+              </p>
             </a>
           </div>
 
           <h3 style="margin-top: 30px; margin-bottom: 10px; color: #666">
-            📖 Documentação Técnica
+            📖
+            <span data-i18n="technicalDocumentation"
+              >Technical Documentation</span
+            >
           </h3>
           <div class="link-grid">
             <a href="api-docs.html" class="link-card">
-              <h3>🔌 API Documentation (Interactive)</h3>
-              <p>
-                Documentação interativa OpenAPI com Swagger UI - teste os
-                endpoints diretamente
+              <h3>
+                🔌
+                <span data-i18n="apiDocInteractive"
+                  >API Documentation (Interactive)</span
+                >
+              </h3>
+              <p data-i18n="apiDocInteractiveDesc">
+                Interactive OpenAPI documentation with Swagger UI - test
+                endpoints directly
               </p>
             </a>
             <a href="test-swagger.html" class="link-card">
-              <h3>🧪 API Documentation (Simple Test)</h3>
-              <p>
-                Versão minimalista do Swagger UI para testes rápidos e debugging
+              <h3>
+                🧪
+                <span data-i18n="apiDocSimpleTest"
+                  >API Documentation (Simple Test)</span
+                >
+              </h3>
+              <p data-i18n="apiDocSimpleTestDesc">
+                Minimalist Swagger UI version for quick testing and debugging
               </p>
             </a>
             <a href="doc-viewer.html?doc=docs/API.md" class="link-card">
-              <h3>📄 API Documentation (Markdown)</h3>
-              <p>Referência completa da API REST em formato texto</p>
+              <h3>
+                📄
+                <span data-i18n="apiDocMarkdown"
+                  >API Documentation (Markdown)</span
+                >
+              </h3>
+              <p data-i18n="apiDocMarkdownDesc">
+                Complete REST API reference in text format
+              </p>
             </a>
             <a
               href="doc-viewer.html?doc=docs/META_REQUEST_ADAPTER.md"
               class="link-card"
             >
-              <h3>🔄 Meta Request Adapter</h3>
-              <p>Como o sistema adapta requests para Instagram e Messenger</p>
+              <h3>
+                🔄
+                <span data-i18n="metaRequestAdapter">Meta Request Adapter</span>
+              </h3>
+              <p data-i18n="metaRequestAdapterDesc">
+                How the system adapts requests for Instagram and Messenger
+              </p>
             </a>
             <a
               href="doc-viewer.html?doc=docs/TROUBLESHOOTING.md"
               class="link-card"
             >
-              <h3>🔧 Troubleshooting</h3>
-              <p>Soluções para problemas comuns e debugging</p>
+              <h3>
+                🔧 <span data-i18n="troubleshooting">Troubleshooting</span>
+              </h3>
+              <p data-i18n="troubleshootingDesc">
+                Solutions for common problems and debugging
+              </p>
             </a>
           </div>
 
           <h3 style="margin-top: 30px; margin-bottom: 10px; color: #666">
-            🔗 Links Úteis
+            🔗 <span data-i18n="usefulLinks">Useful Links</span>
           </h3>
           <div class="link-grid">
             <a
@@ -390,83 +363,33 @@
               class="link-card"
               target="_blank"
             >
-              <h3>Meta Messenger Platform</h3>
-              <p>Documentação oficial da Meta para Messenger</p>
+              <h3 data-i18n="metaMessengerPlatform">Meta Messenger Platform</h3>
+              <p data-i18n="metaMessengerPlatformDesc">
+                Official Meta documentation for Messenger
+              </p>
             </a>
             <a
               href="https://developers.facebook.com/docs/messenger-platform/instagram"
               class="link-card"
               target="_blank"
             >
-              <h3>Meta Instagram Messaging</h3>
-              <p>Documentação oficial da Meta para Instagram</p>
+              <h3 data-i18n="metaInstagramMessaging">
+                Meta Instagram Messaging
+              </h3>
+              <p data-i18n="metaInstagramMessagingDesc">
+                Official Meta documentation for Instagram
+              </p>
             </a>
             <a
               href="https://www.infobip.com/docs/api"
               class="link-card"
               target="_blank"
             >
-              <h3>Infobip API</h3>
-              <p>Documentação da Infobip para WhatsApp</p>
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Tab: Monitoring -->
-      <div id="tab-monitoring" class="tab-content">
-        <div class="quick-links">
-          <h2>📊 Alertas e Monitoramento</h2>
-          <div class="link-grid">
-            <a href="monitoring.html" class="link-card" target="_blank">
-              <h3>📊 Dashboard Completo</h3>
-              <p>
-                Aceder ao dashboard completo de monitoramento com métricas em
-                tempo real
+              <h3 data-i18n="infobipAPI">Infobip API</h3>
+              <p data-i18n="infobipAPIDesc">
+                Infobip documentation for WhatsApp
               </p>
             </a>
-            <a
-              href="monitoring.html#rate-limits"
-              class="link-card"
-              target="_blank"
-            >
-              <h3>⏱️ Rate Limits</h3>
-              <p>Monitorar uso de rate limits (horário e diário)</p>
-            </a>
-            <a
-              href="monitoring.html#circuit-breaker"
-              class="link-card"
-              target="_blank"
-            >
-              <h3>🔌 Circuit Breaker</h3>
-              <p>Verificar estado do circuit breaker e estatísticas</p>
-            </a>
-            <a href="monitoring.html#alerts" class="link-card" target="_blank">
-              <h3>🚨 Alertas</h3>
-              <p>Ver alertas recentes e estatísticas por severidade</p>
-            </a>
-            <a href="monitoring.html#health" class="link-card" target="_blank">
-              <h3>💚 System Health</h3>
-              <p>Verificar saúde geral do sistema</p>
-            </a>
-            <a
-              href="monitoring.html#performance"
-              class="link-card"
-              target="_blank"
-            >
-              <h3>📈 Performance</h3>
-              <p>Métricas de performance e tempos de resposta</p>
-            </a>
-          </div>
-
-          <div class="info-box">
-            <h3>ℹ️ Nota sobre Monitoramento</h3>
-            <p>
-              O dashboard de monitoramento requer que os endpoints da API
-              estejam implementados no backend. Consulte
-              <strong>docs/META_PRODUCTION_DEPLOYMENT.md</strong> para
-              instruções de implementação.
-            </p>
           </div>
         </div>
       </div>

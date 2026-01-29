@@ -1,10 +1,12 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
+<!doctype html>
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Meta Metrics Dashboard - WhatsApp HSM Adapter</title>
     <link rel="stylesheet" href="styles.css" />
+    <script src="i18n.js"></script>
+    <script src="language-selector.js"></script>
     <style>
       .dashboard-container {
         max-width: 1400px;
@@ -43,7 +45,9 @@
         border-radius: 10px;
         padding: 20px;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        transition: transform 0.2s, box-shadow 0.2s;
+        transition:
+          transform 0.2s,
+          box-shadow 0.2s;
       }
 
       .metric-card:hover {
@@ -245,29 +249,33 @@
       }
     </style>
   </head>
-  <body>
-    <script src="header.js"></script>
-
+  <body data-page="metrics">
     <div class="dashboard-container">
       <div class="dashboard-header">
-        <h1>📊 Meta Metrics Dashboard</h1>
-        <p>Monitoramento em tempo real do Instagram e Facebook Messenger</p>
+        <h1 data-i18n="metricsDashboardTitle">📊 Meta Metrics Dashboard</h1>
+        <p data-i18n="metricsDashboardSubtitle">
+          Real-time monitoring of Instagram and Facebook Messenger
+        </p>
       </div>
 
       <div class="period-selector">
         <button class="period-btn active" data-period="hour">
-          Última Hora
+          <span data-i18n="lastHour">Last Hour</span>
         </button>
-        <button class="period-btn" data-period="day">Último Dia</button>
-        <button class="period-btn" data-period="week">Última Semana</button>
+        <button class="period-btn" data-period="day">
+          <span data-i18n="lastDay">Last Day</span>
+        </button>
+        <button class="period-btn" data-period="week">
+          <span data-i18n="lastWeek">Last Week</span>
+        </button>
         <button class="refresh-btn" onclick="refreshDashboard()">
-          🔄 Atualizar
+          🔄 <span data-i18n="update">Update</span>
         </button>
       </div>
 
       <div class="platform-tabs">
         <button class="platform-tab active" data-platform="all">
-          Todas as Plataformas
+          <span data-i18n="allPlatforms">All Platforms</span>
         </button>
         <button class="platform-tab" data-platform="instagram">
           Instagram
@@ -278,89 +286,139 @@
       </div>
 
       <div id="loading" class="loading">
-        <p>Carregando métricas...</p>
+        <p data-i18n="loadingMetrics">Loading metrics...</p>
       </div>
 
       <div id="dashboard-content" style="display: none">
         <!-- KPIs principais -->
         <div class="metrics-grid">
           <div class="metric-card">
-            <h3><span class="metric-icon">✅</span> Taxa de Sucesso</h3>
+            <h3>
+              <span class="metric-icon">✅</span>
+              <span data-i18n="successRate">Success Rate</span>
+            </h3>
             <div class="metric-value" id="success-rate">--</div>
-            <div class="metric-label">Mensagens enviadas com sucesso</div>
+            <div class="metric-label" data-i18n="messagesSent">
+              Messages sent successfully
+            </div>
             <div class="metric-trend" id="success-trend"></div>
           </div>
 
           <div class="metric-card">
-            <h3><span class="metric-icon">⚡</span> Tempo de Resposta</h3>
+            <h3>
+              <span class="metric-icon">⚡</span>
+              <span data-i18n="responseTime">Response Time</span>
+            </h3>
             <div class="metric-value" id="response-time">--</div>
-            <div class="metric-label">Tempo médio da API</div>
+            <div class="metric-label" data-i18n="average">Average API time</div>
             <div class="metric-trend" id="response-trend"></div>
           </div>
 
           <div class="metric-card">
-            <h3><span class="metric-icon">📨</span> Mensagens Enviadas</h3>
+            <h3>
+              <span class="metric-icon">📨</span>
+              <span data-i18n="messagesSent">Messages Sent</span>
+            </h3>
             <div class="metric-value" id="messages-sent">--</div>
-            <div class="metric-label">Total de mensagens</div>
+            <div class="metric-label" data-i18n="totalMessages">
+              Total messages
+            </div>
             <div class="metric-trend" id="messages-trend"></div>
           </div>
 
           <div class="metric-card">
-            <h3><span class="metric-icon">🔔</span> Webhooks Recebidos</h3>
+            <h3>
+              <span class="metric-icon">🔔</span>
+              <span data-i18n="webhooksReceived">Webhooks Received</span>
+            </h3>
             <div class="metric-value" id="webhooks-received">--</div>
-            <div class="metric-label">Total de webhooks</div>
+            <div class="metric-label" data-i18n="totalMessages">
+              Total webhooks
+            </div>
             <div class="metric-trend" id="webhooks-trend"></div>
           </div>
 
           <div class="metric-card">
-            <h3><span class="metric-icon">⏰</span> Erros de Janela 24h</h3>
+            <h3>
+              <span class="metric-icon">⏰</span>
+              <span data-i18n="window24hErrors">24h Window Errors</span>
+            </h3>
             <div class="metric-value" id="window-errors">--</div>
-            <div class="metric-label">Mensagens fora da janela</div>
+            <div class="metric-label" data-i18n="windowErrors">
+              Messages outside window
+            </div>
             <div class="metric-trend" id="window-trend"></div>
           </div>
 
           <div class="metric-card">
-            <h3><span class="metric-icon">🔧</span> Status do Sistema</h3>
+            <h3>
+              <span class="metric-icon">🔧</span>
+              <span data-i18n="systemStatus">System Status</span>
+            </h3>
             <div class="metric-value" id="system-status">
               <span class="status-indicator status-healthy"></span>
-              <span style="font-size: 0.6em">Saudável</span>
+              <span style="font-size: 0.6em" data-i18n="healthy">Healthy</span>
             </div>
-            <div class="metric-label">Circuit Breaker e Alertas</div>
+            <div class="metric-label">Circuit Breaker</div>
           </div>
         </div>
 
         <!-- Gráficos -->
         <div class="chart-container">
-          <h3>📈 Taxa de Sucesso por Plataforma</h3>
-          <div class="chart-placeholder" id="success-chart">
-            Gráfico de taxa de sucesso será exibido aqui
+          <h3>
+            📈
+            <span data-i18n="successRateByPlatform"
+              >Success Rate by Platform</span
+            >
+          </h3>
+          <div
+            class="chart-placeholder"
+            id="success-chart"
+            data-i18n="chartWillDisplay"
+          >
+            Chart will be displayed here
           </div>
         </div>
 
         <div class="chart-container">
-          <h3>⚡ Tempo de Resposta (Percentis)</h3>
-          <div class="chart-placeholder" id="response-chart">
-            Gráfico de tempo de resposta será exibido aqui
+          <h3>
+            ⚡
+            <span data-i18n="responseTimePercentiles"
+              >Response Time (Percentiles)</span
+            >
+          </h3>
+          <div
+            class="chart-placeholder"
+            id="response-chart"
+            data-i18n="chartWillDisplay"
+          >
+            Chart will be displayed here
           </div>
         </div>
 
         <div class="chart-container">
-          <h3>❌ Top 10 Erros</h3>
+          <h3>❌ <span data-i18n="top10Errors">Top 10 Errors</span></h3>
           <ul class="error-list" id="error-list">
             <li class="error-item">
-              <span>Carregando erros...</span>
+              <span data-i18n="loading">Loading...</span>
             </li>
           </ul>
         </div>
 
         <div class="chart-container">
-          <h3>🔔 Webhooks por Tipo</h3>
-          <div class="chart-placeholder" id="webhook-chart">
-            Gráfico de webhooks será exibido aqui
+          <h3>🔔 <span data-i18n="webhooksByType">Webhooks by Type</span></h3>
+          <div
+            class="chart-placeholder"
+            id="webhook-chart"
+            data-i18n="chartWillDisplay"
+          >
+            Chart will be displayed here
           </div>
         </div>
 
-        <div class="last-updated" id="last-updated">Última atualização: --</div>
+        <div class="last-updated" id="last-updated">
+          <span data-i18n="lastUpdated">Last updated</span>: --
+        </div>
       </div>
     </div>
 
@@ -399,7 +457,7 @@
           // Carregar resumo de métricas
           const platform = currentPlatform === "all" ? null : currentPlatform;
           const response = await fetch(
-            `/metrics/meta.php?period=${currentPeriod}`
+            `/metrics/meta.php?period=${currentPeriod}`,
           );
           const data = await response.json();
 
@@ -434,7 +492,7 @@
           currentPlatform === "all"
             ? Object.values(data.response_time).reduce(
                 (sum, rt) => sum + rt.average_ms,
-                0
+                0,
               ) / 2
             : data.response_time[currentPlatform].average_ms;
 
@@ -501,6 +559,11 @@
 
       // Carregar métricas ao iniciar
       loadMetrics();
+
+      // Apply translations when page loads
+      if (typeof i18n !== "undefined") {
+        i18n.updatePageContent();
+      }
     </script>
   </body>
 </html>

@@ -1,11 +1,12 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Alertas e Monitoramento - Admin Panel</title>
+    <script src="i18n.js"></script>
+    <script src="language-selector.js"></script>
     <link rel="stylesheet" href="styles.css" />
-    <script src="header.js"></script>
   </head>
   <body data-page="monitoring">
     <div class="container">
@@ -170,7 +171,7 @@
                                 }/${limits.hourly.limit}</div>
                                 <div class="progress-bar">
                                     <div class="progress-fill ${getProgressClass(
-                                      limits.hourly.percentage
+                                      limits.hourly.percentage,
                                     )}" 
                                          style="width: ${
                                            limits.hourly.percentage
@@ -179,8 +180,8 @@
                                 <div class="metric-detail">${
                                   limits.hourly.remaining
                                 } remaining (${limits.hourly.percentage.toFixed(
-              1
-            )}%)</div>
+                                  1,
+                                )}%)</div>
                             </div>
                         </div>
                         <div class="metric-row">
@@ -191,7 +192,7 @@
                                 }/${limits.daily.limit}</div>
                                 <div class="progress-bar">
                                     <div class="progress-fill ${getProgressClass(
-                                      limits.daily.percentage
+                                      limits.daily.percentage,
                                     )}" 
                                          style="width: ${
                                            limits.daily.percentage
@@ -200,8 +201,8 @@
                                 <div class="metric-detail">${
                                   limits.daily.remaining
                                 } remaining (${limits.daily.percentage.toFixed(
-              1
-            )}%)</div>
+                                  1,
+                                )}%)</div>
                             </div>
                         </div>
                     `;
@@ -218,7 +219,7 @@
 
         try {
           const response = await fetch(
-            `${API_BASE}?action=get_circuit_breaker_status`
+            `${API_BASE}?action=get_circuit_breaker_status`,
           );
           const data = await response.json();
 
@@ -228,8 +229,8 @@
               cb.state === "closed"
                 ? "state-good"
                 : cb.state === "open"
-                ? "state-bad"
-                : "state-warning";
+                  ? "state-bad"
+                  : "state-warning";
             const stateIcon =
               cb.state === "closed" ? "✅" : cb.state === "open" ? "❌" : "⚠️";
 
@@ -241,14 +242,14 @@
                             <div class="metric-item">
                                 <span class="metric-label">Failures:</span>
                                 <span class="metric-value">${cb.failures}/${
-              cb.failure_threshold
-            }</span>
+                                  cb.failure_threshold
+                                }</span>
                             </div>
                             <div class="metric-item">
                                 <span class="metric-label">Successes:</span>
                                 <span class="metric-value">${cb.successes}/${
-              cb.success_threshold
-            }</span>
+                                  cb.success_threshold
+                                }</span>
                             </div>
                         </div>
                         ${
@@ -257,8 +258,8 @@
                             <div class="metric-detail">
                                 Opened at: ${cb.opened_at}<br>
                                 Elapsed: ${cb.elapsed_seconds}s / ${
-                                cb.elapsed_seconds + cb.remaining_seconds
-                              }s
+                                  cb.elapsed_seconds + cb.remaining_seconds
+                                }s
                             </div>
                         `
                             : ""
@@ -321,11 +322,11 @@
                                     ([type, count]) => `
                                     <div class="type-item">
                                         <span class="type-name">${formatAlertType(
-                                          type
+                                          type,
                                         )}</span>
                                         <span class="type-count">${count}</span>
                                     </div>
-                                `
+                                `,
                                   )
                                   .join("")}
                             </div>
@@ -377,7 +378,7 @@
                 <div class="alert-item ${alert.severity}">
                     <div class="alert-header">
                         <span class="alert-type">${formatAlertType(
-                          alert.type
+                          alert.type,
                         )}</span>
                         <span class="alert-time">${alert.timestamp}</span>
                     </div>
@@ -387,12 +388,12 @@
                         ? `<div class="alert-context">${JSON.stringify(
                             alert.context,
                             null,
-                            2
+                            2,
                           )}</div>`
                         : ""
                     }
                 </div>
-            `
+            `,
           )
           .join("");
       }
@@ -426,7 +427,7 @@
                                     <span>${status ? "✅" : "❌"}</span>
                                     <span>${check}</span>
                                 </div>
-                            `
+                            `,
                               )
                               .join("")}
                         </div>
@@ -444,7 +445,7 @@
 
         try {
           const response = await fetch(
-            `${API_BASE}?action=get_performance_metrics`
+            `${API_BASE}?action=get_performance_metrics`,
           );
           const data = await response.json();
 
@@ -531,7 +532,7 @@
         try {
           const response = await fetch(
             `${API_BASE}?action=reset_circuit_breaker`,
-            { method: "POST" }
+            { method: "POST" },
           );
           const data = await response.json();
 

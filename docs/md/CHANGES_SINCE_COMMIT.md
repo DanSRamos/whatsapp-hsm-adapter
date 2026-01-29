@@ -52,33 +52,37 @@ Interface web completa para gestão de templates e mensagens HSM.
 
 ### 2. **Scripts de Teste e Utilidades**
 
-#### Scripts de Verificação de Templates:
+**NOTA**: Todos os scripts foram movidos para a pasta `scripts/` e alguns duplicados foram removidos.
 
-- `check_templates.php` - Primeira versão de listagem de templates
-- `check_templates_v2.php` - Segunda versão melhorada
-- `check_templates_final.php` - Versão final com formatação completa
-- `check_template_structure.php` - Análise detalhada da estrutura de templates
+#### Scripts de Verificação de Templates (em `scripts/`):
 
-**Uso**: Verificar templates disponíveis na conta Infobip
+- `scripts/check_templates_final.php` - Versão final com formatação completa (mantida)
+- `scripts/check_template_structure.php` - Análise detalhada da estrutura de templates
+- ~~`check_templates.php`~~ - Removido (duplicado)
+- ~~`check_templates_v2.php`~~ - Removido (duplicado)
 
-#### Scripts de Envio de Mensagens:
+**Uso**: `php scripts/check_templates_final.php`
 
-- `send_suporte_message.php` - Envio do template "suporte"
-- `send_teste2_mds.php` - Envio do template "teste2_mds" para +351961725398
-- `send_teste2_mds_966141650.php` - Envio do template "teste2_mds" para +351966141650
-- `test_send_message.php` - Script de teste genérico
-- `test_send_simple.php` - Testes de envio com e sem parâmetros
-- `test_media_template.php` - Teste de templates do tipo MEDIA
+#### Scripts de Envio de Mensagens (em `scripts/`):
 
-**Uso**: Testar envio de mensagens HSM via linha de comando
+- `scripts/send_suporte_message.php` - Envio do template "suporte"
+- `scripts/test_send_message.php` - Script de teste genérico
+- `scripts/test_media_template.php` - Teste de templates do tipo MEDIA
+- ~~`send_teste2_mds.php`~~ - Removido (duplicado)
+- ~~`send_teste2_mds_966141650.php`~~ - Removido (duplicado)
+- ~~`test_send_simple.php`~~ - Removido (duplicado)
 
-#### Scripts de Webhook:
+**Uso**: `php scripts/test_send_message.php`
 
-- `check_incoming_messages.php` - Tentativa de obter mensagens via API (limitação identificada)
-- `simulate_webhook.php` - Simulação de webhooks para testes locais
-- `setup_local_webhook.sh` - Script para configurar webhook local com ngrok
+#### Scripts de Webhook (em `scripts/`):
 
-**Uso**: Testar recepção de mensagens e webhooks
+- `scripts/check_incoming_messages.php` - Tentativa de obter mensagens via API
+- `scripts/simulate_webhook.php` - Simulação de webhooks para testes locais
+- `scripts/test_webhook_meta_completo.php` - Teste completo de webhooks Meta
+- ~~`test_webhook_verification_response.php`~~ - Removido (duplicado)
+- `setup_local_webhook.sh` - Script para configurar webhook local com ngrok (mantido na raiz)
+
+**Uso**: `php scripts/test_webhook_meta_completo.php`
 
 ---
 
@@ -102,13 +106,11 @@ Interface web completa para gestão de templates e mensagens HSM.
 #### Backend (api.php):
 
 1. **Extração de Parâmetros**
-
    - Detecção automática de `{{1}}`, `{{2}}`, etc. nos templates
    - Retorna array de parâmetros para cada template
    - Suporte para templates do tipo TEXT e MEDIA
 
 2. **Envio com Parâmetros**
-
    - Aceita array de parâmetros no payload
    - Validação e filtro de parâmetros vazios
    - Logging detalhado de requests e responses
@@ -121,14 +123,12 @@ Interface web completa para gestão de templates e mensagens HSM.
 #### Frontend (index.html):
 
 1. **Interface Dinâmica**
-
    - Criação automática de campos de input por parâmetro
    - Preview de templates com parâmetros destacados
    - Badge mostrando número de parâmetros
    - Validação client-side
 
 2. **UX Melhorada**
-
    - Loading states
    - Alertas de sucesso/erro
    - Auto-refresh de mensagens

@@ -7,44 +7,39 @@ function renderHeader(currentPage) {
     <div class="header-container">
       <div class="header-top">
         <button onclick="goBack()" class="back-btn" title="Voltar">
-          ← Voltar
+          <span data-i18n="backToDashboard">← Back to Dashboard</span>
         </button>
         <div class="header-title">
-          <h1>📱 Multi-Platform Messaging Admin Panel</h1>
-          <div class="header-subtitle">Gerir mensagens via WhatsApp, Instagram e Facebook Messenger</div>
+          <h1 data-i18n="dashboardTitle">📱 Multi-Platform Messaging Adapter</h1>
+          <div class="header-subtitle" data-i18n="dashboardSubtitle">Unified messaging API for WhatsApp, Instagram, and Facebook Messenger</div>
         </div>
       </div>
       
       <nav class="header-tabs">
-        <a href="index.html" class="tab ${
+        <a href="#" onclick="switchTab(event, 'messages')" class="tab ${
           currentPage === "messages" ? "active" : ""
-        }">
-          💬 Mensagens
+        }" data-tab="messages">
+          💬 <span data-i18n="messages">Messages</span>
         </a>
-        <a href="metrics-dashboard.html" class="tab ${
+        <a href="#" onclick="switchTab(event, 'metrics')" class="tab ${
           currentPage === "metrics" ? "active" : ""
-        }">
-          📊 Métricas
+        }" data-tab="metrics">
+          📊 <span data-i18n="metrics">Metrics</span>
         </a>
-        <a href="performance-dashboard.html" class="tab ${
+        <a href="#" onclick="switchTab(event, 'performance')" class="tab ${
           currentPage === "performance" ? "active" : ""
-        }">
-          ⚡ Performance
+        }" data-tab="performance">
+          ⚡ <span data-i18n="performance">Performance</span>
         </a>
-        <a href="errors-dashboard.html" class="tab ${
+        <a href="#" onclick="switchTab(event, 'errors')" class="tab ${
           currentPage === "errors" ? "active" : ""
-        }">
-          ❌ Erros
+        }" data-tab="errors">
+          ❌ <span data-i18n="alerts">Alerts</span>
         </a>
-        <a href="documentation.html" class="tab ${
-          currentPage === "documentation" ? "active" : ""
-        }">
-          📚 Documentação
-        </a>
-        <a href="monitoring.html" class="tab ${
+        <a href="#" onclick="switchTab(event, 'monitoring')" class="tab ${
           currentPage === "monitoring" ? "active" : ""
-        }">
-          🚨 Alertas
+        }" data-tab="monitoring">
+          🚨 <span data-i18n="monitoring">Monitoring</span>
         </a>
       </nav>
     </div>
@@ -54,10 +49,46 @@ function renderHeader(currentPage) {
 }
 
 function goBack() {
-  if (window.history.length > 1) {
-    window.history.back();
-  } else {
-    window.location.href = "index.html";
+  // Always redirect to index-tabs.html (main dashboard)
+  window.location.href = "index-tabs.html";
+}
+
+// Function to switch tabs without page navigation
+function switchTab(event, tabName) {
+  event.preventDefault();
+
+  // Update active tab in header
+  document.querySelectorAll(".header-tabs .tab").forEach((tab) => {
+    tab.classList.remove("active");
+  });
+  event.currentTarget.classList.add("active");
+
+  // Hide all tab contents
+  document.querySelectorAll(".tab-content").forEach((content) => {
+    content.style.display = "none";
+  });
+
+  // Show selected tab content
+  const selectedContent = document.getElementById(`${tabName}-content`);
+  if (selectedContent) {
+    selectedContent.style.display = "block";
+  }
+
+  // Load content dynamically if needed
+  if (tabName === "metrics" && typeof loadMetricsContent === "function") {
+    loadMetricsContent();
+  } else if (
+    tabName === "performance" &&
+    typeof loadPerformanceContent === "function"
+  ) {
+    loadPerformanceContent();
+  } else if (tabName === "errors" && typeof loadErrorsContent === "function") {
+    loadErrorsContent();
+  } else if (
+    tabName === "monitoring" &&
+    typeof loadMonitoringContent === "function"
+  ) {
+    loadMonitoringContent();
   }
 }
 
@@ -69,4 +100,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Insert header as first child of body
   body.insertBefore(header, body.firstChild);
+
+  // Apply translations if i18n is available
+  if (typeof i18n !== "undefined") {
+    i18n.updatePageContent();
+  }
 });

@@ -1,0 +1,11 @@
+# Ignore scripts with hardcoded credentials
+# These scripts may contain API keys and should not be committed
+# Use .env file instead for credentials
+
+# Backup files
+*.backup
+*.bak
+
+# Local test files
+*_local.php
+*_test_local.php

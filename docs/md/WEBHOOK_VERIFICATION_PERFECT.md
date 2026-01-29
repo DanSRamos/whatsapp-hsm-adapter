@@ -141,13 +141,14 @@ curl http://127.0.0.1:4040/api/requests
 ### Testar webhook localmente
 
 ```bash
-php test_webhook_meta_completo.php
+php scripts/test_webhook_meta_completo.php
 ```
 
 ### Testar verificação
 
 ```bash
-php test_webhook_verification_response.php
+# Nota: Este script foi removido (duplicado)
+# Use: php scripts/test_webhook_meta_completo.php
 ```
 
 ### Ver logs do PHP

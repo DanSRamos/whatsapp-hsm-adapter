@@ -1,9 +1,11 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
+<!doctype html>
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Errors Dashboard - WhatsApp HSM Adapter</title>
+    <script src="i18n.js"></script>
+    <script src="language-selector.js"></script>
     <link rel="stylesheet" href="styles.css" />
     <style>
       .dashboard-container {
@@ -186,9 +188,7 @@
       }
     </style>
   </head>
-  <body>
-    <script src="header.js"></script>
-
+  <body data-page="errors">
     <div class="dashboard-container">
       <div class="dashboard-header">
         <h1>❌ Errors Dashboard</h1>
@@ -288,7 +288,7 @@
         try {
           // Carregar erros por código
           const errorsRes = await fetch(
-            `/metrics/meta/errors?period=${currentPeriod}&limit=20`
+            `/metrics/meta/errors?period=${currentPeriod}&limit=20`,
           );
           const errorsData = await errorsRes.json();
 
@@ -298,7 +298,7 @@
 
           // Carregar erros de janela de mensagens
           const windowRes = await fetch(
-            `/metrics/meta/messaging-window-errors?period=${currentPeriod}`
+            `/metrics/meta/messaging-window-errors?period=${currentPeriod}`,
           );
           const windowData = await windowRes.json();
 
@@ -308,7 +308,7 @@
 
           // Carregar taxa de sucesso para calcular taxa de erro
           const successRes = await fetch(
-            `/metrics/meta/success-rate?period=${currentPeriod}`
+            `/metrics/meta/success-rate?period=${currentPeriod}`,
           );
           const successData = await successRes.json();
 
@@ -324,7 +324,7 @@
         // Total de erros
         const totalErrors = Object.values(errorsData.errors || {}).reduce(
           (sum, count) => sum + count,
-          0
+          0,
         );
         document.getElementById("total-errors").textContent =
           totalErrors.toLocaleString();
@@ -394,10 +394,10 @@
         // Carregar dados para todas as plataformas
         Promise.all([
           fetch(
-            `/metrics/meta/messaging-window-errors?platform=instagram&period=${currentPeriod}`
+            `/metrics/meta/messaging-window-errors?platform=instagram&period=${currentPeriod}`,
           ).then((r) => r.json()),
           fetch(
-            `/metrics/meta/messaging-window-errors?platform=messenger&period=${currentPeriod}`
+            `/metrics/meta/messaging-window-errors?platform=messenger&period=${currentPeriod}`,
           ).then((r) => r.json()),
         ])
           .then(([igData, msgData]) => {
