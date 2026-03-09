@@ -1,6 +1,17 @@
 # Multi-Platform Messaging Adapter
 
-A PHP adapter for integrating with multiple messaging platform APIs (WhatsApp, Instagram, Facebook Messenger, and RCS). Provides a unified abstraction layer for sending and receiving messages across different platforms, including HSM (Highly Structured Messages), free-form text, media, and interactive messages.
+![PHP Version](https://img.shields.io/badge/PHP-8.1%2B-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+![Version](https://img.shields.io/badge/version-2.0.0-orange)
+![Status](https://img.shields.io/badge/status-active-success)
+
+A PHP adapter for integrating with multiple messaging platform APIs (WhatsApp, Instagram, Facebook Messenger, and RCS). Provides a unified abstraction layer for sending and receiving messages across different platforms, including HSM (Highly Structured Messages), free-form text, media, interactive messages, and voice calls.
+
+## 🚀 New in v2.0.0: WhatsApp Voice Calls
+
+Make voice calls via WhatsApp using Infobip API! Check the [Calls Setup Guide](docs/CALLS_SETUP.md) for details.
+
+⚠️ **Important**: Requires Infobip account with Voice/Calls service activated. See [troubleshooting guide](docs/CALLS_TROUBLESHOOTING.md) if you get "Unauthorized access" error.
 
 ## Features
 
@@ -14,7 +25,7 @@ A PHP adapter for integrating with multiple messaging platform APIs (WhatsApp, I
 - ✅ **Media messages** - Images, documents, audio, video (WhatsApp limits apply)
 - ✅ **Interactive buttons** - Up to 3 quick reply buttons
 - ✅ **List messages** - Interactive lists for WhatsApp
-- ✅ **Voice Calls** - Make WhatsApp calls via Infobip API
+- ✅ **Voice Calls** 🆕 - Make WhatsApp calls via Infobip API (requires Voice service)
 
 ### Instagram & Facebook Messenger
 
@@ -36,12 +47,14 @@ A PHP adapter for integrating with multiple messaging platform APIs (WhatsApp, I
 ### Core Features
 
 - ✅ **Web Admin Panel** - Easy API interaction without coding
+- ✅ **Voice Calls Interface** 🆕 - Make and manage WhatsApp calls from web UI
 - ✅ **Webhooks** - Delivery reports and incoming messages
 - ✅ **Rate limiting** - Prevent API abuse
 - ✅ **Automatic retry** - Exponential backoff on failures
 - ✅ **Structured logging** - JSON logs with context
 - ✅ **Health checks** - System monitoring endpoints
 - ✅ **Property-based testing** - Comprehensive test coverage
+- ✅ **Multi-language support** - i18n ready admin panel
 
 ## Requirements
 
@@ -147,7 +160,7 @@ The Admin Panel provides:
 
 ## Admin Panel
 
-The **Web Admin Panel** is the easiest way to interact with the messaging APIs without writing code.
+The **Web Admin Panel** is the easiest way to interact with the messaging APIs without coding.
 
 ### Features
 
@@ -156,7 +169,11 @@ The **Web Admin Panel** is the easiest way to interact with the messaging APIs w
 - **Message History**: View all sent and received messages
 - **Template Management**: Browse and use approved WhatsApp templates
 - **RCS Rich Messaging**: Create rich cards, carousels, and suggestions visually
-- **WhatsApp Calls**: Make voice calls via WhatsApp using Infobip
+- **WhatsApp Calls** 🆕: Make and manage voice calls via WhatsApp using Infobip
+  - Real-time call status monitoring
+  - Call duration timer
+  - Call history
+  - One-click call termination
 - **API Documentation**: Interactive Swagger UI for testing endpoints
 - **Monitoring Dashboard**: Real-time metrics, alerts, and system health
 
@@ -166,10 +183,10 @@ The **Web Admin Panel** is the easiest way to interact with the messaging APIs w
 
    ```bash
    cd admin-panel
-   php -S localhost:8081
+   php -S localhost:8080
    ```
 
-   Open: http://localhost:8081/index-tabs.html
+   Open: http://localhost:8080/index-tabs.html
 
 2. **Production**:
    Configure your web server to serve the `admin-panel` directory
@@ -178,10 +195,21 @@ The **Web Admin Panel** is the easiest way to interact with the messaging APIs w
 ### Tabs
 
 - **💬 Messages**: Send and manage messages across all platforms
-- **📞 Chamadas**: Make WhatsApp voice calls via Infobip
+- **📞 Calls** 🆕: Make WhatsApp voice calls via Infobip
+  - Direct access: http://localhost:8080/calls.html
+  - Features: Real-time monitoring, call history, duration timer
+  - ⚠️ Requires Voice/Calls service activated on Infobip account
 - **📱 RCS**: Rich Communication Services interface
 - **📚 Documentation**: API guides and interactive documentation
 - **📊 Monitoring**: Alerts, metrics, and system health
+
+### Quick Links
+
+- **Main Dashboard**: http://localhost:8080/index-tabs.html
+- **Send Messages**: http://localhost:8080/index.html
+- **Make Calls**: http://localhost:8080/calls.html 🆕
+- **RCS Interface**: http://localhost:8080/rcs.html
+- **Monitoring**: http://localhost:8080/monitoring.html
 
 ## Platform Comparison
 
@@ -346,8 +374,28 @@ $response = $client->post('/api.php?action=initiate_call', [
     ]
 ]);
 
+// Response
+// {
+//   "success": true,
+//   "call_id": "abc123",
+//   "status": "initiated",
+//   "to": "+5511999999999"
+// }
+
+// Check call status
+$status = $client->get('/api.php?action=get_call_status&call_id=abc123');
+
+// Hangup call
+$client->post('/api.php?action=hangup_call&call_id=abc123');
+
 // Or use the web interface at admin-panel/calls.html
 ```
+
+**Requirements:**
+
+- Infobip account with Voice/Calls service activated
+- If you get "Unauthorized access" error, see [Troubleshooting Guide](docs/CALLS_TROUBLESHOOTING.md)
+- Contact Infobip to activate: https://www.infobip.com/contact
 
 For more details, see the [Calls Setup Guide](docs/CALLS_SETUP.md).
 
@@ -500,6 +548,33 @@ Features:
 6. **Monitor logs** - Set up alerts for critical errors
 7. **Update dependencies** - Keep libraries up to date
 
+## FAQ
+
+### WhatsApp Calls
+
+**Q: Why do I get "Unauthorized access" when trying to make calls?**  
+A: Your Infobip account doesn't have the Voice/Calls service activated. This is a separate service from WhatsApp messaging. Contact Infobip support to activate it: https://www.infobip.com/contact
+
+**Q: How much do WhatsApp calls cost?**  
+A: Costs vary by country, typically €0.02-€0.15 per minute. Check with Infobip for exact pricing.
+
+**Q: Can I use Twilio for calls instead of Infobip?**  
+A: Yes, Twilio also supports voice calls. See [CALLS_TROUBLESHOOTING.md](docs/CALLS_TROUBLESHOOTING.md) for alternatives.
+
+### General
+
+**Q: Which messaging platforms are supported?**  
+A: WhatsApp, Instagram, Facebook Messenger, and RCS.
+
+**Q: Do I need separate accounts for each platform?**  
+A: Yes. WhatsApp/RCS use Infobip or Twilio. Instagram/Messenger use Meta (Facebook) credentials.
+
+**Q: Can I send messages without the admin panel?**  
+A: Yes, use the REST API directly. See [API.md](docs/API.md) for details.
+
+**Q: Is there a rate limit?**  
+A: Yes, each platform has its own limits. The adapter includes rate limiting to prevent abuse.
+
 ## Contributing
 
 Contributions are welcome! Please:
@@ -516,15 +591,34 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Support
 
-- **Documentation**: [docs/API.md](docs/API.md)
-- **Admin Panel**: http://localhost:8081/index-tabs.html
-- **Issues**: https://github.com/your-org/multi-platform-messaging-adapter/issues
-- **Email**: support@example.com
+### Documentation
+
+- **Complete Index**: [docs/INDEX.md](docs/INDEX.md)
+- **API Reference**: [docs/API.md](docs/API.md)
+- **Calls Setup**: [docs/CALLS_SETUP.md](docs/CALLS_SETUP.md) 🆕
+- **Troubleshooting**: [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
+
+### Quick Access
+
+- **Admin Panel**: http://localhost:8080/index-tabs.html
+- **Make Calls**: http://localhost:8080/calls.html 🆕
+- **Changelog**: [CHANGELOG.md](CHANGELOG.md)
+
+### Contact
+
+- **Issues**: https://github.com/DanSRamos/whatsapp-hsm-adapter/issues
+- **Infobip Support**: https://www.infobip.com/contact
+- **Meta Support**: https://developers.facebook.com/support
 
 ## Roadmap
 
 - [x] Meta support (Instagram + Facebook Messenger)
 - [x] Automatic platform detection (Instagram vs Messenger)
+- [x] WhatsApp Voice Calls 🆕
+- [ ] Call recording
+- [ ] Conference calls (multiple participants)
+- [ ] IVR (Interactive Voice Response)
+- [ ] Call analytics and reporting
 - [x] Multi-provider admin panel
 - [x] RCS support (Rich Communication Services)
 - [x] RCS rich cards and carousels
