@@ -14,6 +14,7 @@ A PHP adapter for integrating with multiple messaging platform APIs (WhatsApp, I
 - ✅ **Media messages** - Images, documents, audio, video (WhatsApp limits apply)
 - ✅ **Interactive buttons** - Up to 3 quick reply buttons
 - ✅ **List messages** - Interactive lists for WhatsApp
+- ✅ **Voice Calls** - Make WhatsApp calls via Infobip API
 
 ### Instagram & Facebook Messenger
 
@@ -155,6 +156,7 @@ The **Web Admin Panel** is the easiest way to interact with the messaging APIs w
 - **Message History**: View all sent and received messages
 - **Template Management**: Browse and use approved WhatsApp templates
 - **RCS Rich Messaging**: Create rich cards, carousels, and suggestions visually
+- **WhatsApp Calls**: Make voice calls via WhatsApp using Infobip
 - **API Documentation**: Interactive Swagger UI for testing endpoints
 - **Monitoring Dashboard**: Real-time metrics, alerts, and system health
 
@@ -176,6 +178,7 @@ The **Web Admin Panel** is the easiest way to interact with the messaging APIs w
 ### Tabs
 
 - **💬 Messages**: Send and manage messages across all platforms
+- **📞 Chamadas**: Make WhatsApp voice calls via Infobip
 - **📱 RCS**: Rich Communication Services interface
 - **📚 Documentation**: API guides and interactive documentation
 - **📊 Monitoring**: Alerts, metrics, and system health
@@ -332,6 +335,22 @@ $response = $client->post('/messages/hsm', [
 ]);
 ```
 
+### Make WhatsApp Call
+
+```php
+// Via API
+$response = $client->post('/api.php?action=initiate_call', [
+    'json' => [
+        'to' => '+5511999999999',
+        'from' => '+351927587119'
+    ]
+]);
+
+// Or use the web interface at admin-panel/calls.html
+```
+
+For more details, see the [Calls Setup Guide](docs/CALLS_SETUP.md).
+
 ### Send Instagram Message
 
 ```php
@@ -441,12 +460,33 @@ Features:
 
 ## Documentation
 
+### 📚 Complete Documentation Index
+
+- **[Documentation Index](docs/INDEX.md)** - Complete list of all documentation
+
+### 🚀 Quick Start Guides
+
 - [API Reference](docs/API.md)
+- [Calls Quick Start](docs/CALLS_QUICK_START.md) 🆕
 - [Instagram/Messenger Setup](docs/INSTAGRAM_SETUP.md)
+
+### 📞 Calls (Voice)
+
+- [Calls Setup Guide](docs/CALLS_SETUP.md) 🆕
+- [Calls Troubleshooting](docs/CALLS_TROUBLESHOOTING.md) 🆕
+- [Calls Feature Summary](docs/CALLS_FEATURE_SUMMARY.md) 🆕
+
+### 📱 Meta Platform
+
 - [Meta Credentials Setup](docs/META_CREDENTIALS_SETUP.md)
 - [Production Deployment](docs/META_PRODUCTION_DEPLOYMENT.md)
-- [Troubleshooting Guide](docs/TROUBLESHOOTING.md)
 - [Meta Request Adapter](docs/META_REQUEST_ADAPTER.md)
+
+### 🔧 Operations & Troubleshooting
+
+- [Troubleshooting Guide](docs/TROUBLESHOOTING.md)
+- [Operations Runbook](docs/OPERATIONS_RUNBOOK.md)
+- [Deployment Checklist](docs/DEPLOYMENT_CHECKLIST.md)
 
 ## Security
 

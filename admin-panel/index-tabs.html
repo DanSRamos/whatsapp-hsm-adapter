@@ -184,6 +184,9 @@
         <button class="tab-button active" onclick="switchTab('messages')">
           <span data-i18n="messages">💬 Messages</span>
         </button>
+        <button class="tab-button" onclick="switchTab('calls')">
+          <span>📞 Chamadas</span>
+        </button>
         <button class="tab-button" onclick="switchTab('documentation')">
           <span data-i18n="documentation">📚 Documentation</span>
         </button>
@@ -200,6 +203,19 @@
                 Complete interface to send messages via WhatsApp, Instagram,
                 Messenger and RCS
               </p>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Calls -->
+      <div id="tab-calls" class="tab-content">
+        <div class="quick-links">
+          <h2>📞 Chamadas WhatsApp</h2>
+          <div class="link-grid">
+            <a href="calls.html" class="link-card">
+              <h3>📞 Iniciar Chamada</h3>
+              <p>Interface para fazer chamadas via WhatsApp usando Infobip</p>
             </a>
           </div>
         </div>
@@ -249,6 +265,27 @@
             🚀 <span data-i18n="setupGuides">Setup Guides</span>
           </h3>
           <div class="link-grid">
+            <a href="doc-viewer.html?doc=docs/CALLS_SETUP.md" class="link-card">
+              <h3>📞 Configuração de Chamadas WhatsApp</h3>
+              <p>
+                Guia completo para configurar e usar chamadas via WhatsApp com
+                Infobip
+              </p>
+            </a>
+            <a
+              href="doc-viewer.html?doc=docs/CALLS_QUICK_START.md"
+              class="link-card"
+            >
+              <h3>⚡ Guia Rápido - Chamadas</h3>
+              <p>Início rápido para fazer chamadas via WhatsApp em 3 passos</p>
+            </a>
+            <a
+              href="doc-viewer.html?doc=docs/CALLS_TROUBLESHOOTING.md"
+              class="link-card"
+            >
+              <h3>🔧 Troubleshooting - Chamadas</h3>
+              <p>Solução de problemas comuns com chamadas WhatsApp</p>
+            </a>
             <a
               href="doc-viewer.html?doc=docs/INSTAGRAM_SETUP.md"
               class="link-card"

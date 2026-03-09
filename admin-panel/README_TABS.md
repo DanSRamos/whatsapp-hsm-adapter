@@ -2,30 +2,39 @@
 
 ## Visão Geral
 
-O Admin Panel foi atualizado com um sistema de tabs que organiza a interface em 3 páginas principais:
+O Admin Panel foi atualizado com um sistema de tabs que organiza a interface em páginas principais:
 
-1. **💬 Mensagens** - Interface original para envio e visualização de mensagens
-2. **📚 Documentação** - Acesso centralizado a toda documentação do sistema
-3. **📊 Alertas & Monitoramento** - Dashboard de monitoramento e alertas em tempo real
+1. **💬 Mensagens** - Interface para envio e visualização de mensagens
+2. **📞 Chamadas** - Interface para fazer chamadas via WhatsApp (requer serviço Voice ativado)
+3. **📚 Documentação** - Acesso centralizado a toda documentação do sistema
+
+## ⚠️ Importante: Chamadas WhatsApp
+
+A funcionalidade de chamadas requer:
+
+- Conta Infobip com serviço **Voice/Calls** ativado
+- Se você receber erro "Unauthorized access", consulte [CALLS_TROUBLESHOOTING.md](../docs/CALLS_TROUBLESHOOTING.md)
+- Entre em contato com a Infobip: https://www.infobip.com/contact
 
 ## Estrutura de Arquivos
 
 ```
 admin-panel/
-├── index-tabs.html          # Nova página principal com tabs
-├── index.html               # Página de mensagens (original)
-├── documentation.html       # Página de documentação
-├── monitoring.html          # Página de alertas e monitoramento
+├── index-tabs.html          # Página principal com tabs
+├── index.html               # Página de mensagens
+├── calls.html               # Página de chamadas WhatsApp (NOVO)
+├── rcs.html                 # Página de mensagens RCS
+├── monitoring.html          # Página de monitoramento
 ├── styles.css               # Estilos compartilhados
-├── api.php                  # Backend API
+├── api.php                  # Backend API (inclui endpoints de chamadas)
 └── README_TABS.md          # Este arquivo
 ```
 
 ## Como Usar
 
-### Opção 1: Usar a Nova Interface com Tabs
+### Opção 1: Usar a Interface com Tabs (Recomendado)
 
-Acesse: `http://localhost:8000/admin-panel/index-tabs.html`
+Acesse: `http://localhost:8080/admin-panel/index-tabs.html`
 
 Esta é a interface recomendada que integra todas as funcionalidades em uma única página com navegação por tabs.
 
@@ -33,30 +42,49 @@ Esta é a interface recomendada que integra todas as funcionalidades em uma úni
 
 Você também pode acessar cada página diretamente:
 
-- **Mensagens**: `http://localhost:8000/admin-panel/index.html`
-- **Documentação**: `http://localhost:8000/admin-panel/documentation.html`
-- **Monitoramento**: `http://localhost:8000/admin-panel/monitoring.html`
+- **Mensagens**: `http://localhost:8080/admin-panel/index.html`
+- **Chamadas**: `http://localhost:8080/admin-panel/calls.html`
+- **RCS**: `http://localhost:8080/admin-panel/rcs.html`
+- **Monitoramento**: `http://localhost:8080/admin-panel/monitoring.html`
 
 ## Funcionalidades por Página
 
 ### 1. Mensagens (index.html)
 
-Interface original mantida intacta:
+Interface para envio de mensagens:
 
 - Envio de mensagens via WhatsApp, Instagram e Messenger
 - Seleção de templates HSM (WhatsApp)
 - Visualização de mensagens recebidas
 - Filtros por provider
 
-### 2. Documentação (documentation.html)
+### 2. Chamadas (calls.html) 🆕
 
-Nova página com acesso centralizado à documentação:
+Interface para chamadas via WhatsApp:
+
+- Formulário para iniciar chamadas
+- Monitoramento de status em tempo real
+- Timer de duração da chamada
+- Controle para encerrar chamadas
+- Histórico de chamadas realizadas
+
+**⚠️ Requisitos:**
+
+- Serviço Voice/Calls ativado na Infobip
+- Consulte [CALLS_TROUBLESHOOTING.md](../docs/CALLS_TROUBLESHOOTING.md) se tiver problemas
+
+### 3. Documentação
+
+Acesso centralizado à documentação:
 
 **Guias de Setup:**
 
 - Instagram Setup Guide
 - Meta Credentials Setup
 - Production Deployment Guide
+- **Calls Setup Guide** 🆕
+- **Calls Quick Start** 🆕
+- **Calls Troubleshooting** 🆕
 
 **Documentação Técnica:**
 
@@ -79,15 +107,6 @@ Nova página com acesso centralizado à documentação:
 
 - Links diretos para documentação oficial da Meta
 - Documentação da Infobip
-
-### 3. Alertas & Monitoramento (monitoring.html)
-
-Nova página de monitoramento em tempo real:
-
-**Rate Limit Status:**
-
-- Uso horário e diário
-- Barras de progresso visuais
 - Alertas quando limites são atingidos
 
 **Circuit Breaker:**

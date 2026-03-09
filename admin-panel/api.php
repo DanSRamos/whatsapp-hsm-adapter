@@ -138,6 +138,23 @@ switch ($action) {
         handleWebhook($config);
         break;
     
+    // Call endpoints
+    case 'initiate_call':
+        initiateCall($config);
+        break;
+    
+    case 'get_call_status':
+        getCallStatus($config);
+        break;
+    
+    case 'hangup_call':
+        hangupCall($config);
+        break;
+    
+    case 'get_call_history':
+        getCallHistory($config);
+        break;
+    
     default:
         jsonResponse(['success' => false, 'error' => 'Invalid action'], 400);
 }
@@ -566,4 +583,256 @@ function jsonResponse($data, $code = 200) {
     http_response_code($code);
     echo json_encode($data);
     exit;
+}
+
+/**
+ * Inicia uma chamada via WhatsApp usando Infobip
+ */
+function initiateCall($config) {
+    $input = json_decode(file_get_contents('php://input'), true);
+    
+    if (!isset($input['to'])) {
+        jsonResponse(['success' => false, 'error' => 'Campo "to" é obrigatório'], 400);
+        return;
+    }
+    
+    $to = $input['to'];
+    $from = $input['from'] ?? $config['infobip_sender'];
+    
+    // Formatar número de telefone
+    $to = preg_replace('/[^0-9+]/', '', $to);
+    if (!str_starts_with($to, '+')) {
+        $to = '+' . $to;
+    }
+    
+    $payload = [
+        'from' => $from,
+        'to' => $to,
+    ];
+    
+    // Log da tentativa
+    error_log('Tentando iniciar chamada: ' . json_encode($payload));
+    
+    $ch = curl_init('https://api.infobip.com/calls/1/calls');
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Authorization: App ' . $config['infobip_api_key'],
+        'Content-Type: application/json',
+        'Accept: application/json'
+    ]);
+    
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($ch);
+    curl_close($ch);
+    
+    // Log da resposta
+    error_log('Resposta Infobip Calls (HTTP ' . $httpCode . '): ' . $response);
+    
+    if ($curlError) {
+        jsonResponse(['success' => false, 'error' => 'Erro de conexão: ' . $curlError], 500);
+        return;
+    }
+    
+    $data = json_decode($response, true);
+    
+    if ($httpCode === 200 || $httpCode === 201) {
+        jsonResponse([
+            'success' => true,
+            'call_id' => $data['callId'] ?? null,
+            'status' => $data['status'] ?? 'initiated',
+            'to' => $to,
+            'from' => $from,
+            'data' => $data
+        ]);
+    } else {
+        // Mensagens de erro mais específicas
+        $errorMsg = 'Erro ao iniciar chamada (HTTP ' . $httpCode . ')';
+        
+        if ($httpCode === 401 || $httpCode === 403) {
+            $errorMsg = 'Acesso não autorizado. Sua conta Infobip não tem permissões para fazer chamadas de voz. Entre em contato com o suporte da Infobip para ativar o serviço de Voice/Calls.';
+        } elseif (isset($data['requestError']['serviceException']['text'])) {
+            $errorMsg = $data['requestError']['serviceException']['text'];
+        }
+        
+        jsonResponse([
+            'success' => false, 
+            'error' => $errorMsg, 
+            'details' => $data,
+            'http_code' => $httpCode,
+            'help' => 'Para usar chamadas de voz, você precisa de uma conta Infobip com o serviço Voice ativado. Contate: https://www.infobip.com/contact'
+        ], $httpCode);
+    }
+}
+
+/**
+ * Obtém o status de uma chamada
+ */
+function getCallStatus($config) {
+    $callId = $_GET['call_id'] ?? null;
+    
+    if (!$callId) {
+        jsonResponse(['success' => false, 'error' => 'Call ID é obrigatório'], 400);
+        return;
+    }
+    
+    $ch = curl_init('https://api.infobip.com/calls/1/calls/' . urlencode($callId));
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Authorization: App ' . $config['infobip_api_key'],
+        'Accept: application/json'
+    ]);
+    
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($ch);
+    curl_close($ch);
+    
+    if ($curlError) {
+        jsonResponse(['success' => false, 'error' => 'Erro de conexão: ' . $curlError], 500);
+        return;
+    }
+    
+    $data = json_decode($response, true);
+    
+    if ($httpCode === 200) {
+        jsonResponse([
+            'success' => true,
+            'call_id' => $callId,
+            'status' => $data['status'] ?? 'unknown',
+            'duration' => $data['duration'] ?? 0,
+            'startTime' => $data['startTime'] ?? null,
+            'endTime' => $data['endTime'] ?? null,
+            'data' => $data
+        ]);
+    } else {
+        $errorMsg = 'Erro ao obter status (HTTP ' . $httpCode . ')';
+        if (isset($data['requestError']['serviceException']['text'])) {
+            $errorMsg = $data['requestError']['serviceException']['text'];
+        }
+        jsonResponse(['success' => false, 'error' => $errorMsg], $httpCode);
+    }
+}
+
+/**
+ * Encerra uma chamada ativa
+ */
+function hangupCall($config) {
+    $callId = $_GET['call_id'] ?? null;
+    
+    if (!$callId) {
+        jsonResponse(['success' => false, 'error' => 'Call ID é obrigatório'], 400);
+        return;
+    }
+    
+    $ch = curl_init('https://api.infobip.com/calls/1/calls/' . urlencode($callId) . '/hangup');
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Authorization: App ' . $config['infobip_api_key'],
+        'Content-Type: application/json',
+        'Accept: application/json'
+    ]);
+    
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($ch);
+    curl_close($ch);
+    
+    if ($curlError) {
+        jsonResponse(['success' => false, 'error' => 'Erro de conexão: ' . $curlError], 500);
+        return;
+    }
+    
+    $data = json_decode($response, true);
+    
+    if ($httpCode === 200) {
+        jsonResponse([
+            'success' => true,
+            'call_id' => $callId,
+            'status' => 'terminated',
+            'message' => 'Chamada encerrada com sucesso'
+        ]);
+    } else {
+        $errorMsg = 'Erro ao encerrar chamada (HTTP ' . $httpCode . ')';
+        if (isset($data['requestError']['serviceException']['text'])) {
+            $errorMsg = $data['requestError']['serviceException']['text'];
+        }
+        jsonResponse(['success' => false, 'error' => $errorMsg], $httpCode);
+    }
+}
+
+/**
+ * Lista histórico de chamadas
+ */
+function getCallHistory($config) {
+    $from = $_GET['from'] ?? null;
+    $to = $_GET['to'] ?? null;
+    $limit = (int)($_GET['limit'] ?? 50);
+    
+    $queryParams = ['limit' => $limit];
+    
+    if ($from) {
+        $queryParams['from'] = $from;
+    }
+    
+    if ($to) {
+        $to = preg_replace('/[^0-9+]/', '', $to);
+        if (!str_starts_with($to, '+')) {
+            $to = '+' . $to;
+        }
+        $queryParams['to'] = $to;
+    }
+    
+    $url = 'https://api.infobip.com/calls/1/calls?' . http_build_query($queryParams);
+    
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Authorization: App ' . $config['infobip_api_key'],
+        'Accept: application/json'
+    ]);
+    
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($ch);
+    curl_close($ch);
+    
+    if ($curlError) {
+        jsonResponse(['success' => false, 'error' => 'Erro de conexão: ' . $curlError], 500);
+        return;
+    }
+    
+    $data = json_decode($response, true);
+    
+    if ($httpCode === 200) {
+        $calls = [];
+        if (isset($data['results'])) {
+            foreach ($data['results'] as $call) {
+                $calls[] = [
+                    'callId' => $call['callId'] ?? null,
+                    'from' => $call['from'] ?? null,
+                    'to' => $call['to'] ?? null,
+                    'status' => $call['status'] ?? 'unknown',
+                    'duration' => $call['duration'] ?? 0,
+                    'startTime' => $call['startTime'] ?? null,
+                    'endTime' => $call['endTime'] ?? null,
+                ];
+            }
+        }
+        
+        jsonResponse([
+            'success' => true,
+            'calls' => $calls,
+            'total' => count($calls)
+        ]);
+    } else {
+        $errorMsg = 'Erro ao obter histórico (HTTP ' . $httpCode . ')';
+        if (isset($data['requestError']['serviceException']['text'])) {
+            $errorMsg = $data['requestError']['serviceException']['text'];
+        }
+        jsonResponse(['success' => false, 'error' => $errorMsg, 'calls' => []], $httpCode);
+    }
 }

@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chamadas WhatsApp - Infobip</title>
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      .call-container {
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 20px;
+      }
+
+      .call-form {
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #333;
+      }
+
+      .form-group input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 16px;
+      }
+
+      .form-group input:focus {
+        outline: none;
+        border-color: #25d366;
+      }
+
+      .btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 4px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      .btn-primary {
+        background: #25d366;
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: #1fb855;
+      }
+
+      .btn-danger {
+        background: #dc3545;
+        color: white;
+      }
+
+      .btn-danger:hover {
+        background: #c82333;
+      }
+
+      .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .call-status {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+        display: none;
+      }
+
+      .call-status.active {
+        display: block;
+      }
+
+      .status-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      .status-initiated {
+        background: #ffc107;
+        color: #000;
+      }
+
+      .status-ringing {
+        background: #17a2b8;
+        color: white;
+      }
+
+      .status-answered {
+        background: #28a745;
+        color: white;
+      }
+
+      .status-terminated {
+        background: #6c757d;
+        color: white;
+      }
+
+      .call-history {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .call-history h2 {
+        margin-top: 0;
+        margin-bottom: 20px;
+      }
+
+      .call-item {
+        padding: 15px;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .call-item:last-child {
+        border-bottom: none;
+      }
+
+      .call-info {
+        flex: 1;
+      }
+
+      .call-number {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 5px;
+      }
+
+      .call-time {
+        font-size: 14px;
+        color: #666;
+      }
+
+      .alert {
+        padding: 15px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+      }
+
+      .alert-success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+
+      .alert-error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
+
+      .alert-info {
+        background: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+      }
+
+      .phone-input-hint {
+        font-size: 12px;
+        color: #666;
+        margin-top: 5px;
+      }
+
+      .call-duration {
+        font-size: 24px;
+        font-weight: bold;
+        color: #25d366;
+        text-align: center;
+        margin: 20px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="call-container">
+      <h1>📞 Chamadas WhatsApp</h1>
+
+      <div id="alertContainer"></div>
+
+      <!-- Aviso sobre requisitos -->
+      <div class="alert alert-info" style="margin-bottom: 20px">
+        <strong>⚠️ Requisitos:</strong> Para usar chamadas de voz, sua conta
+        Infobip precisa ter o serviço <strong>Voice/Calls</strong> ativado. Se
+        você receber erro "Unauthorized access", entre em contato com o suporte
+        da Infobip para ativar este serviço. <br /><br />
+        📧 Contato Infobip:
+        <a
+          href="https://www.infobip.com/contact"
+          target="_blank"
+          style="color: #0c5460; text-decoration: underline"
+          >https://www.infobip.com/contact</a
+        >
+      </div>
+
+      <!-- Formulário de Chamada -->
+      <div class="call-form">
+        <h2>Iniciar Nova Chamada</h2>
+        <form id="callForm">
+          <div class="form-group">
+            <label for="phoneNumber">Número do WhatsApp</label>
+            <input
+              type="tel"
+              id="phoneNumber"
+              name="phoneNumber"
+              placeholder="+5511999999999"
+              required
+            />
+            <div class="phone-input-hint">
+              Digite o número com código do país (ex: +55 para Brasil)
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary" id="callButton">
+            📞 Iniciar Chamada
+          </button>
+        </form>
+      </div>
+
+      <!-- Status da Chamada Ativa -->
+      <div class="call-status" id="callStatus">
+        <h2>Chamada em Andamento</h2>
+        <div class="call-info">
+          <p><strong>Para:</strong> <span id="currentCallNumber"></span></p>
+          <p>
+            <strong>Status:</strong>
+            <span id="currentCallStatus" class="status-badge"></span>
+          </p>
+          <p>
+            <strong>ID da Chamada:</strong> <span id="currentCallId"></span>
+          </p>
+        </div>
+        <div class="call-duration" id="callDuration">00:00</div>
+        <button class="btn btn-danger" id="hangupButton">
+          ❌ Encerrar Chamada
+        </button>
+      </div>
+
+      <!-- Histórico de Chamadas -->
+      <div class="call-history">
+        <h2>Histórico de Chamadas</h2>
+        <div id="callHistoryList">
+          <p style="text-align: center; color: #666">Carregando histórico...</p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let currentCallId = null;
+      let callTimer = null;
+      let callStartTime = null;
+      let statusCheckInterval = null;
+
+      const API_BASE = "../api.php";
+
+      // Inicializar
+      document.addEventListener("DOMContentLoaded", () => {
+        loadCallHistory();
+
+        document
+          .getElementById("callForm")
+          .addEventListener("submit", handleCallSubmit);
+        document
+          .getElementById("hangupButton")
+          .addEventListener("click", handleHangup);
+      });
+
+      // Iniciar chamada
+      async function handleCallSubmit(e) {
+        e.preventDefault();
+
+        const phoneNumber = document.getElementById("phoneNumber").value.trim();
+
+        if (!phoneNumber) {
+          showAlert("Por favor, digite um número de telefone", "error");
+          return;
+        }
+
+        const callButton = document.getElementById("callButton");
+        callButton.disabled = true;
+        callButton.textContent = "Iniciando...";
+
+        try {
+          const response = await fetch(`${API_BASE}?action=initiate_call`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              to: phoneNumber,
+            }),
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            currentCallId = result.call_id;
+            showCallStatus(phoneNumber, result.call_id, result.status);
+            startCallTimer();
+            startStatusCheck();
+            showAlert("Chamada iniciada com sucesso!", "success");
+            document.getElementById("phoneNumber").value = "";
+          } else {
+            let errorMessage = result.error || "Erro desconhecido";
+
+            // Adicionar informações de ajuda se disponível
+            if (result.help) {
+              console.warn("Ajuda:", result.help);
+              errorMessage +=
+                "\n\nℹ️ Verifique o console para mais informações.";
+            }
+
+            // Mostrar detalhes técnicos no console
+            if (result.http_code) {
+              console.error("HTTP Code:", result.http_code);
+              console.error("Details:", result.details);
+            }
+
+            showAlert(errorMessage, "error");
+          }
+        } catch (error) {
+          showAlert("Erro de conexão: " + error.message, "error");
+        } finally {
+          callButton.disabled = false;
+          callButton.textContent = "📞 Iniciar Chamada";
+        }
+      }
+
+      // Encerrar chamada
+      async function handleHangup() {
+        if (!currentCallId) return;
+
+        const hangupButton = document.getElementById("hangupButton");
+        hangupButton.disabled = true;
+
+        try {
+          const response = await fetch(
+            `${API_BASE}?action=hangup_call&call_id=${currentCallId}`,
+            {
+              method: "POST",
+            },
+          );
+
+          const result = await response.json();
+
+          if (result.success) {
+            showAlert("Chamada encerrada", "info");
+            hideCallStatus();
+            loadCallHistory();
+          } else {
+            showAlert("Erro ao encerrar chamada: " + result.error, "error");
+          }
+        } catch (error) {
+          showAlert("Erro de conexão: " + error.message, "error");
+        } finally {
+          hangupButton.disabled = false;
+        }
+      }
+
+      // Verificar status da chamada
+      async function checkCallStatus() {
+        if (!currentCallId) return;
+
+        try {
+          const response = await fetch(
+            `${API_BASE}?action=get_call_status&call_id=${currentCallId}`,
+          );
+          const result = await response.json();
+
+          if (result.success) {
+            updateCallStatus(result.status);
+
+            if (result.status === "terminated" || result.status === "failed") {
+              hideCallStatus();
+              loadCallHistory();
+            }
+          }
+        } catch (error) {
+          console.error("Erro ao verificar status:", error);
+        }
+      }
+
+      // Carregar histórico
+      async function loadCallHistory() {
+        try {
+          const response = await fetch(`${API_BASE}?action=get_call_history`);
+          const result = await response.json();
+
+          const historyList = document.getElementById("callHistoryList");
+
+          if (result.success && result.calls.length > 0) {
+            historyList.innerHTML = result.calls
+              .map(
+                (call) => `
+                        <div class="call-item">
+                            <div class="call-info">
+                                <div class="call-number">${call.to || "Desconhecido"}</div>
+                                <div class="call-time">
+                                    ${formatDate(call.startTime)} - Duração: ${formatDuration(call.duration)}
+                                </div>
+                            </div>
+                            <span class="status-badge status-${call.status}">${call.status}</span>
+                        </div>
+                    `,
+              )
+              .join("");
+          } else {
+            historyList.innerHTML =
+              '<p style="text-align: center; color: #666;">Nenhuma chamada encontrada</p>';
+          }
+        } catch (error) {
+          console.error("Erro ao carregar histórico:", error);
+        }
+      }
+
+      // Mostrar status da chamada
+      function showCallStatus(number, callId, status) {
+        document.getElementById("currentCallNumber").textContent = number;
+        document.getElementById("currentCallId").textContent = callId;
+        updateCallStatus(status);
+        document.getElementById("callStatus").classList.add("active");
+      }
+
+      // Atualizar status
+      function updateCallStatus(status) {
+        const statusElement = document.getElementById("currentCallStatus");
+        statusElement.textContent = status;
+        statusElement.className = `status-badge status-${status}`;
+      }
+
+      // Esconder status
+      function hideCallStatus() {
+        document.getElementById("callStatus").classList.remove("active");
+        stopCallTimer();
+        stopStatusCheck();
+        currentCallId = null;
+      }
+
+      // Timer da chamada
+      function startCallTimer() {
+        callStartTime = Date.now();
+        callTimer = setInterval(() => {
+          const elapsed = Math.floor((Date.now() - callStartTime) / 1000);
+          const minutes = Math.floor(elapsed / 60)
+            .toString()
+            .padStart(2, "0");
+          const seconds = (elapsed % 60).toString().padStart(2, "0");
+          document.getElementById("callDuration").textContent =
+            `${minutes}:${seconds}`;
+        }, 1000);
+      }
+
+      function stopCallTimer() {
+        if (callTimer) {
+          clearInterval(callTimer);
+          callTimer = null;
+        }
+      }
+
+      // Verificação de status
+      function startStatusCheck() {
+        statusCheckInterval = setInterval(checkCallStatus, 3000);
+      }
+
+      function stopStatusCheck() {
+        if (statusCheckInterval) {
+          clearInterval(statusCheckInterval);
+          statusCheckInterval = null;
+        }
+      }
+
+      // Alertas
+      function showAlert(message, type) {
+        const alertContainer = document.getElementById("alertContainer");
+        const alert = document.createElement("div");
+        alert.className = `alert alert-${type}`;
+        alert.textContent = message;
+        alertContainer.appendChild(alert);
+
+        setTimeout(() => {
+          alert.remove();
+        }, 5000);
+      }
+
+      // Formatação
+      function formatDate(dateString) {
+        if (!dateString) return "Data desconhecida";
+        const date = new Date(dateString);
+        return date.toLocaleString("pt-BR");
+      }
+
+      function formatDuration(seconds) {
+        if (!seconds) return "0s";
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
+      }
+    </script>
+  </body>
+</html>
