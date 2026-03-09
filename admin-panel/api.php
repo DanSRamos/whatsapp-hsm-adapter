@@ -43,8 +43,8 @@ header('Access-Control-Allow-Headers: Content-Type');
 
 // Configuration
 $config = [
-    'infobip_api_key' => '1de5f9151fbe499385186a3327ea1b27-a6a496a1-03bd-4c7b-99c6-6351972188f1',
-    'infobip_sender' => '351927587119',
+    'infobip_api_key' => getenv('INFOBIP_API_KEY') ?: '',
+    'infobip_sender' => getenv('INFOBIP_SENDER') ?: '',
     'messages_file' => __DIR__ . '/messages.json',
     
     // Meta (Instagram + Messenger) configuration
